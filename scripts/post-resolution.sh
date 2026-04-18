@@ -55,6 +55,29 @@ github_reply() {
     echo -e "${GREEN}✓ Replied to #$comment_id${NC}"
 }
 
+# GitHub: Resolve PR Review Comment (行内评论)
+github_resolve() {
+    local comment_id="$1"
+    
+    echo -e "${BLUE}Resolving GitHub PR comment #$comment_id...${NC}"
+    
+    # Only works for PR review comments (with path/position)
+    local response
+    response=$(gh api \
+        repos/"$PR_OWNER"/"$PR_REPO"/pulls/"$PR_NUMBER"/comments/"$comment_id" \
+        -X PATCH \
+        -f resolved=true \
+        -f resolution="resolved" 2>&1)
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Resolved #$comment_id${NC}"
+        return 0
+    else
+        echo -e "${YELLOW}⚠ Cannot resolve #$comment_id (may be issue comment, not PR review comment)${NC}"
+        return 1
+    fi
+}
+
 # GitHub: 在 PR 中统一回复
 github_summary() {
     local resolved_ids="$1"

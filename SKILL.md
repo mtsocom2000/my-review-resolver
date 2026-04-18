@@ -346,16 +346,35 @@ PR: {owner}/{repo}#{pr_number}
 
 **目标：** 标记已解决的评论
 
-**GitHub API：**
-```bash
-# 回复评论标记 resolved
-gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
-  -X POST -f body="✓ Resolved in commit {commit_sha}"
+**重要：** GitHub 有两种评论类型：
 
-# 或者在 PR 中统一回复
-gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
-  -X POST -f body="已修复以下问题：\n- #1: 缺少输入验证\n- #2: 命名不清晰\n\nCommits: {commit_shas}"
+| 类型 | API Endpoint | 能否 Resolve |
+|------|-------------|-------------|
+| **PR Review Comments** (行内) | `/pulls/{n}/comments/{id}` | ✅ 可以 |
+| **Issue Comments** (普通) | `/issues/{n}/comments/{id}` | ❌ 不可以 |
+
+**Resolve PR Review Comment (行内评论):**
+```bash
+# 标记为 resolved (仅适用于行内评论)
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id} \
+  -X PATCH -f resolved=true -f resolution="resolved"
 ```
+
+**回复 Issue Comment (普通评论):**
+```bash
+# 回复说明已修复
+github api repos/{owner}/{repo}/issues/{pr_number}/comments/{comment_id}/replies \
+  -X POST -f body="✅ Resolved in commit {sha}"
+
+# 或在 PR 中统一回复
+github api repos/{owner}/{repo}/issues/{pr_number}/comments \
+  -X POST -f body="## Resolved Comments\n\n- #123: Fixed in {sha}\n- #456: Fixed in {sha}"
+```
+
+**最佳实践：**
+1. 优先使用行内评论 (可以 resolve)
+2. 对于普通评论，回复说明已修复并引用 commit
+3. 在总结评论中列出所有已修复的问题
 
 **GitLab API：**
 ```bash
