@@ -1,0 +1,49 @@
+{
+  "name": "pr-comment-fix",
+  "version": "2.1.0",
+  "description": "Automatically analyze and fix PR comments with multi-stage workflow and user confirmations",
+  "author": "Insight Agent",
+  "license": "MIT",
+  "homepage": "https://github.com/mtsocom2000/my-review-resolver",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mtsocom2000/my-review-resolver.git"
+  },
+  "skills": [
+    {
+      "name": "pr-comment-fix",
+      "path": "./SKILL.md",
+      "description": "Fix PR comments with detailed logging and confirmation steps"
+    }
+  ],
+  "commands": [
+    {
+      "name": "fix-pr",
+      "description": "Analyze and fix PR comments",
+      "usage": "/fix-pr <PR_URL>"
+    }
+  ],
+  "requirements": {
+    "git": "required",
+    "gh_cli": "optional (for GitHub API access)"
+  },
+  "compatibility": {
+    "claude-code": ">=0.1.0",
+    "cursor": ">=1.0.0",
+    "vscode": ">=1.80.0",
+    "opencode": ">=0.2.0"
+  },
+  "features": [
+    "Detailed PR information logging",
+    "Branch status verification",
+    "Comment analysis with confirmation",
+    "Individual fix confirmation",
+    "Push confirmation",
+    "Individual reply confirmation",
+    "Optional summary comment"
+  ],
+  "install": {
+    "script": "./install.sh",
+    "manual": "Copy pr-comment-fix/ to ~/.claude/skills/"
+  }
+}
