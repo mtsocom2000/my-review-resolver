@@ -261,14 +261,14 @@ PASSED=$((PASSED + 1))
 TOTAL=$((TOTAL + 1))
 echo ""
 
-# 模拟 Stage 11: Summary
+# 模拟 Stage 11: Summary (Optional)
 echo -e "${BOLD}═══ Stage 11: Summary Comment (Optional)${NC}"
 echo ""
 echo -e "${YELLOW}[CONFIRM] Add summary comment? (yes/no)${NC}"
-echo -e "${GREEN}  → no (skip as per v2.0 behavior)${NC}"
+echo -e "${GREEN}  → no (skip as per v2.0 default behavior)${NC}"
 echo ""
 
-echo -e "${GREEN}✓ PASS${NC} - Summary comment optional"
+echo -e "${GREEN}✓ PASS${NC} - Summary comment skipped (optional step)"
 PASSED=$((PASSED + 1))
 TOTAL=$((TOTAL + 1))
 echo ""
