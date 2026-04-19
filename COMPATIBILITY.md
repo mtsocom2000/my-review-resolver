@@ -36,13 +36,13 @@ This would require:
 
 ## Platform Support Matrix
 
-| Platform | Support | Install Method | Notes |
-|----------|---------|----------------|-------|
-| **Claude Code** | ✅ Full | `./install.sh --claude` | Native skill support |
-| **Cursor** | ✅ Full | `./install.sh --cursor` | Via skills directory |
-| **VSCode Copilot** | ✅ Basic | `./install.sh --vscode` | SKILL.md only |
-| **OpenCode** | ✅ Full | `./install.sh --opencode` | Native skill support |
-| **Local Project** | ✅ Full | `./install.sh --local` | Project-specific |
+| Platform | Support | Install Method (Linux/macOS) | Install Method (Windows) | Notes |
+|----------|---------|------------------------------|--------------------------|-------|
+| **Claude Code** | ✅ Full | `./install.sh --claude` | `.\install.ps1 -Target claude` | Native skill support |
+| **Cursor** | ✅ Full | `./install.sh --cursor` | `.\install.ps1 -Target cursor` | Via skills directory |
+| **VSCode Copilot** | ✅ Basic | `./install.sh --vscode` | `.\install.ps1 -Target vscode` | SKILL.md only |
+| **OpenCode** | ✅ Full | `./install.sh --opencode` | `.\install.ps1 -Target opencode` | Native skill support |
+| **Local Project** | ✅ Full | `./install.sh --local` | `.\install.ps1 -Target local` | Project-specific |
 
 ---
 

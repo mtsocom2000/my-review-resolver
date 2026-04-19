@@ -14,6 +14,7 @@
 
 ### 1 分钟安装
 
+**Linux / macOS:**
 ```bash
 # Clone 仓库
 git clone https://github.com/mtsocom2000/my-review-resolver.git
@@ -21,6 +22,16 @@ cd my-review-resolver
 
 # 运行安装脚本
 ./install.sh --auto
+```
+
+**Windows (PowerShell):**
+```powershell
+# Clone 仓库
+git clone https://github.com/mtsocom2000/my-review-resolver.git
+cd my-review-resolver
+
+# 运行安装脚本
+.\install.ps1 -Auto
 ```
 
 ### 立即使用
@@ -254,6 +265,7 @@ Agent:
 
 ### 命令行参数
 
+**Linux / macOS (Bash):**
 ```bash
 # 安装到特定平台
 ./install.sh --claude    # Claude Code
@@ -267,6 +279,38 @@ Agent:
 
 # 卸载
 ./install.sh --uninstall
+```
+
+**Windows (PowerShell):**
+```powershell
+# 安装到特定平台
+.\install.ps1 -Target claude     # Claude Code
+.\install.ps1 -Target cursor     # Cursor
+.\install.ps1 -Target vscode     # VSCode Copilot
+.\install.ps1 -Target opencode   # OpenCode
+.\install.ps1 -Target local      # Local project
+
+# 安装到所有平台
+.\install.ps1 -Target all
+
+# 卸载
+.\install.ps1 -Target uninstall
+```
+
+### Windows 手动安装
+
+如果不想使用安装脚本，可以手动复制文件：
+
+```powershell
+# Claude Code
+$src = "path\to\my-review-resolver"
+$dst = "$HOME\.claude\skills\pr-comment-fix"
+New-Item -ItemType Directory -Force -Path $dst | Out-Null
+Copy-Item "$src\SKILL.md" $dst -Force
+Copy-Item "$src\agents" $dst -Recurse -Force
+Copy-Item "$src\scripts" $dst -Recurse -Force
+Copy-Item "$src\references" $dst -Recurse -Force
+Copy-Item "$src\lib" $dst -Recurse -Force
 ```
 
 ### 平台特定安装路径
