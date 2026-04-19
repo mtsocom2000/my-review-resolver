@@ -49,6 +49,8 @@ install_claude_code() {
     cp -r "$SKILL_DIR/agents/" "$target_dir/" 2>/dev/null || true
     cp -r "$SKILL_DIR/scripts/" "$target_dir/" 2>/dev/null || true
     cp -r "$SKILL_DIR/references/" "$target_dir/" 2>/dev/null || true
+    cp -r "$SKILL_DIR/lib/" "$target_dir/" 2>/dev/null || true
+    cp -r "$SKILL_DIR/ecc-adapter/" "$target_dir/" 2>/dev/null || true
     
     echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
     echo ""

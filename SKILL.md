@@ -1,8 +1,9 @@
 ---
 name: pr-comment-fix
-description: Use when given a GitHub/GitLab PR URL to check local branch sync status, fetch PR comments, analyze comment validity, apply fixes with multi-agent parallel review, verify build/tests pass, and optionally push and mark comments resolved
+description: Use when given a GitHub/GitLab PR URL to check local branch sync status, fetch PR comments, analyze comment validity, apply fixes with multi-agent parallel review (using ECC agents if available), verify build/tests pass, and optionally push and mark comments resolved
 origin: custom
-version: 2.0.0
+version: 2.1.0
+ecc-integration: true
 ---
 
 # PR Comment Fix v2
@@ -17,6 +18,47 @@ version: 2.0.0
 3. **所有关键操作必须获得用户确认**
 4. 保持修复的原子性和可追溯性
 5. **详细日志输出每个步骤**
+
+---
+
+## ECC Integration
+
+### Detection
+
+This skill automatically detects if ECC (Everything Claude Code) is installed:
+
+```typescript
+import { detectECC, buildParallelReviewTasks } from './lib/ecc-detector';
+
+const ecc = detectECC();
+if (ecc.installed) {
+  // Use ECC agents for parallel review
+  const tasks = buildParallelReviewTasks({ diff, comment, filePath });
+  // Spawn subagents for security, performance, quality review
+} else {
+  // Use fallback subagents
+}
+```
+
+### ECC Agents Used
+
+When ECC is available, the skill leverages these agents for parallel review:
+
+| Agent | Purpose | Fallback |
+|-------|---------|----------|
+| `security-reviewer` | Security vulnerability analysis | Built-in security agent |
+| `performance-optimizer` | Performance issue detection | Built-in performance agent |
+| `code-reviewer` | Code quality review | Built-in quality agent |
+| `typescript-reviewer` | TS/JS specific review (auto-selected) | Built-in analyzer |
+| `python-reviewer` | Python specific review (auto-selected) | Built-in analyzer |
+
+### Fallback Strategy
+
+If ECC is not installed:
+
+1. Use built-in subagents (analyzer, security, performance, quality, validator)
+2. Same workflow, fewer specialized capabilities
+3. User can install ECC later for enhanced review
 
 ## When to Use
 

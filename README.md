@@ -2,6 +2,41 @@
 
 根据 PR 评论自动分析、修复、验证代码的完整工作流。
 
+**v2.1.0**: 新增 ECC (Everything Claude Code) 集成，支持自动检测并使用 ECC agents 进行多角度代码审查。
+
+---
+
+## 🆕 ECC Integration
+
+### 自动检测 ECC
+
+Skill 会自动检测是否安装了 ECC，并使用其 agents 进行增强审查：
+
+```
+✅ ECC detected: 48 agents available
+🚀 Running parallel review with ECC agents:
+   - security-reviewer: Analyzing...
+   - performance-optimizer: Analyzing...
+   - code-reviewer: Analyzing...
+```
+
+### 安装 ECC (可选)
+
+```bash
+# Clone ECC
+git clone https://github.com/affaan-m/everything-claude-code.git
+cd everything-claude-code
+
+# Install
+npm install && ./install.sh --profile full
+```
+
+### 无 ECC 时使用 Fallback
+
+如果未安装 ECC，skill 使用内置 agents，功能完全兼容。
+
+📖 详情：[ECC_INTEGRATION.md](ECC_INTEGRATION.md)
+
 ## 快速开始
 
 ### 安装
