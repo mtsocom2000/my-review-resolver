@@ -2,12 +2,12 @@
 
 ## Role
 
-分析 PR 评论，判断问题是否存在且合理。
+Analyze PR comments to determine if issues exist and are reasonable.
 
 ## When to Activate
 
-- Stage 4: Analyze Comments 阶段
-- 收到新的 PR 评论列表时
+- Stage 4: Analyze Comments
+- When receiving new PR comment list
 
 ## Input
 
@@ -62,151 +62,151 @@
 
 ## Analysis Rules
 
-### 1. 存在性判断 (Exists)
+### 1. Existence Check (Exists)
 
-**✓ 存在 (true):**
-- 代码中确实有评论描述的问题
-- 能找到具体的问题代码位置
-- 问题可以被客观验证
+**[Y] Exists (true):**
+- The issue described in the comment actually exists in the code
+- Can locate the specific problematic code position
+- The issue can be objectively verified
 
-**△ 部分存在 (partial):**
-- 问题存在但评论描述不准确
-- 问题已被部分修复
-- 问题在不同位置
+**[~] Partial Exists (partial):**
+- Issue exists but comment description is inaccurate
+- Issue has been partially fixed
+- Issue exists in different locations
 
-**✗ 不存在 (false):**
-- 代码没有问题
-- 评论基于过时的代码
-- 评论误解了代码意图
+**[N] Not Exists (false):**
+- No issue in the code
+- Comment is based on outdated code
+- Comment misunderstands the code intent
 
-### 2. 合理性判断 (Valid)
+### 2. Validity Check (Valid)
 
-**✓ 合理 (true):**
-- 评论建议正确且可行
-- 符合项目编码规范
-- 是业界公认的最佳实践
+**[Y] Valid (true):**
+- Comment suggestion is correct and feasible
+- Complies with project coding standards
+- Is industry-accepted best practice
 
-**△ 部分合理 (partial):**
-- 建议可行但不是最优
-- 与项目风格有冲突
-- 有其他权衡考虑
+**[~] Partial Valid (partial):**
+- Suggestion is feasible but not optimal
+- Conflicts with project style
+- Has other trade-offs to consider
 
-**✗ 不合理 (false):**
-- 建议有误
-- 会引入新问题
-- 违背项目架构原则
+**[N] Invalid (false):**
+- Suggestion is incorrect
+- Would introduce new issues
+- Violates project architecture principles
 
-### 3. 优先级判断 (Severity)
+### 3. Severity Check
 
-| 级别 | 标准 | 示例 |
-|------|------|------|
-| **Critical** | 安全漏洞、数据损坏、严重 bug | SQL 注入、空指针、竞态条件 |
-| **High** | 功能错误、明显的设计问题 | 逻辑错误、缺少错误处理 |
-| **Medium** | 代码质量问题、可维护性问题 | 重复代码、复杂度过高 |
-| **Low** | 风格问题、命名建议 | 命名不清晰、格式问题 |
+| Level | Criteria | Examples |
+|-------|----------|----------|
+| **Critical** | Security vulnerabilities, data corruption, severe bugs | SQL injection, null pointer, race conditions |
+| **High** | Functional errors, obvious design issues | Logic errors, missing error handling |
+| **Medium** | Code quality issues, maintainability issues | Duplicate code, high complexity |
+| **Low** | Style issues, naming suggestions | Unclear naming, formatting issues |
 
-### 4. 可自动修复判断 (Auto Fixable)
+### 4. Auto-Fixable Check
 
-**可自动修复:**
-- 有明确的修复方法
-- 修复范围清晰
-- 修复后容易验证
+**Auto-fixable:**
+- Has clear fix method
+- Fix scope is well-defined
+- Easy to verify after fix
 
-**需人工确认:**
-- 涉及架构决策
-- 有多种可行方案
-- 影响范围不确定
+**Needs Human Review:**
+- Involves architecture decisions
+- Multiple feasible approaches exist
+- Impact scope is uncertain
 
 ## Reasoning Template
 
 ```markdown
 ## Comment #{id} Analysis
 
-**位置:** `{file}:{line}`
+**Location:** `{file}:{line}`
 
-**问题:** {issue_description}
+**Issue:** {issue_description}
 
-**存在性分析:**
-{解释为什么问题存在/不存在}
+**Existence Analysis:**
+{Explain why issue exists/does not exist}
 
-**合理性分析:**
-{解释为什么建议合理/不合理}
+**Validity Analysis:**
+{Explain why suggestion is valid/invalid}
 
-**优先级理由:**
-{解释为什么是这个优先级}
+**Severity Reasoning:**
+{Explain why this severity level}
 
-**修复建议:**
-{具体修复方法或为什么需要人工确认}
+**Fix Suggestion:**
+{Specific fix method or why human review is needed}
 
-**置信度:** {high|medium|low}
-{解释置信度来源}
+**Confidence:** {high|medium|low}
+{Explain confidence source}
 ```
 
 ## Common Patterns
 
-### 安全类评论
+### Security Comments
 ```
-识别关键词：security, inject, validate, sanitize, auth, token, secret
-默认优先级：High 或 Critical
-必须检查：输入验证、认证、授权、密钥管理
-```
-
-### 性能类评论
-```
-识别关键词：performance, slow, n+1, query, cache, memory
-默认优先级：Medium 或 High
-必须检查：循环、数据库查询、缓存策略
+Keywords: security, inject, validate, sanitize, auth, token, secret
+Default Severity: High or Critical
+Must Check: Input validation, authentication, authorization, key management
 ```
 
-### 代码质量类评论
+### Performance Comments
 ```
-识别关键词：refactor, duplicate, complex, clean, simplify
-默认优先级：Medium 或 Low
-必须检查：重复代码、函数复杂度、可读性
+Keywords: performance, slow, n+1, query, cache, memory
+Default Severity: Medium or High
+Must Check: Loops, database queries, caching strategies
 ```
 
-### 风格类评论
+### Code Quality Comments
 ```
-识别关键词：naming, style, convention, format, lint
-默认优先级：Low
-必须检查：项目风格指南、命名规范
+Keywords: refactor, duplicate, complex, clean, simplify
+Default Severity: Medium or Low
+Must Check: Duplicate code, function complexity, readability
+```
+
+### Style Comments
+```
+Keywords: naming, style, convention, format, lint
+Default Severity: Low
+Must Check: Project style guide, naming conventions
 ```
 
 ## Edge Cases
 
-### 1. 评论基于过时代码
+### 1. Comment Based on Outdated Code
 ```
-检测方式：评论提到的代码行与当前代码不匹配
-行动：标记为 "exists: false"，理由说明代码已变更
-```
-
-### 2. 评论相互矛盾
-```
-检测方式：多条评论对同一位置给出相反建议
-行动：标记为 "needs_human_review: true"，列出矛盾点
+Detection: Code lines mentioned in comment do not match current code
+Action: Mark as "exists: false", explain code has changed
 ```
 
-### 3. 评论过于模糊
+### 2. Contradictory Comments
 ```
-检测方式：评论没有具体说明问题位置或修复方法
-行动：标记为 "needs_human_review: true"，请求澄清
+Detection: Multiple comments give opposite suggestions for same location
+Action: Mark as "needs_human_review: true", list contradictions
 ```
 
-### 4. 评论涉及外部依赖
+### 3. Vague Comments
 ```
-检测方式：评论建议修改第三方库或外部 API
-行动：标记为 "auto_fixable: false"，说明限制
+Detection: Comment does not specify issue location or fix method
+Action: Mark as "needs_human_review: true", request clarification
+```
+
+### 4. Comments Involving External Dependencies
+```
+Detection: Comment suggests modifying third-party libraries or external APIs
+Action: Mark as "auto_fixable: false", explain limitations
 ```
 
 ## Quality Checks
 
-在输出分析结果前，自我检查：
+Before outputting analysis results, self-check:
 
-- [ ] 每个分析都有明确的理由
-- [ ] 优先级判断有依据
-- [ ] 置信度与实际把握一致
-- [ ] 需要人工评论的原因清晰
-- [ ] 没有遗漏任何评论
+- [ ] Every analysis has clear reasoning
+- [ ] Severity judgment has basis
+- [ ] Confidence matches actual certainty
+- [ ] Reasons for human review are clear
+- [ ] No comments are missed
 
 ---
 

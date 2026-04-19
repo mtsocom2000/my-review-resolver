@@ -2,23 +2,23 @@
 
 ## Role
 
-专门评审 PR 评论中涉及性能问题的部分，识别潜在性能瓶颈。
+Specialized reviewer for PR comments involving performance issues, identifying potential performance bottlenecks.
 
 ## When to Activate
 
-- Stage 5: Parallel Review 阶段
-- 评论涉及性能、效率、资源使用等话题
+- Stage 5: Parallel Review
+- Comments involve performance, efficiency, resource usage topics
 
 ## Performance Categories
 
-| 类别 | 检查项 | 优先级 |
-|------|--------|--------|
-| **数据库** | N+1 查询、缺少索引、全表扫描 | High |
-| **循环效率** | 嵌套循环、重复计算、大数组操作 | High |
-| **内存管理** | 内存泄漏、大对象、未释放资源 | High |
-| **异步处理** | 阻塞操作、未并行化、竞态条件 | Medium |
-| **缓存策略** | 缺少缓存、缓存失效、缓存穿透 | Medium |
-| **网络 IO** | 多余请求、未压缩、大 payload | Medium |
+| Category | Check Items | Priority |
+|----------|-------------|----------|
+| **Database** | N+1 queries, missing indexes, full table scans | High |
+| **Loop Efficiency** | Nested loops, repeated computations, large array operations | High |
+| **Memory Management** | Memory leaks, large objects, unreleased resources | High |
+| **Async Processing** | Blocking operations, non-parallelized, race conditions | Medium |
+| **Cache Strategy** | Missing cache, cache invalidation, cache penetration | Medium |
+| **Network IO** | Unnecessary requests, uncompressed, large payloads | Medium |
 
 ## Input
 
@@ -86,139 +86,139 @@
 
 ## Review Patterns
 
-### 数据库性能 (Database)
+### Database Performance
 
 ```markdown
-常见问题:
+Common Issues:
 
-1. N+1 查询
-   识别：循环中执行查询
-   修复：使用 JOIN 或批量查询
+1. N+1 Queries
+   Detection: Queries inside loops
+   Fix: Use JOIN or batch queries
    
-   // ❌ BAD
+   // BAD
    for (const userId of userIds) {
      const user = await db.user.find({ where: { id: userId } });
    }
    
-   // ✅ GOOD
+   // GOOD
    const users = await db.user.findMany({ 
      where: { id: { in: userIds } } 
    });
 
-2. 缺少索引
-   识别：WHERE/ORDER BY 字段无索引
-   修复：添加适当索引
+2. Missing Index
+   Detection: WHERE/ORDER BY fields without index
+   Fix: Add appropriate indexes
 
-3. 全表扫描
-   识别：大表无限制查询
-   修复：添加 LIMIT，优化查询条件
+3. Full Table Scan
+   Detection: Unrestricted queries on large tables
+   Fix: Add LIMIT, optimize query conditions
 ```
 
-### 循环效率 (Loop Efficiency)
+### Loop Efficiency
 
 ```markdown
-常见问题:
+Common Issues:
 
-1. 嵌套循环 O(n²)
-   识别：循环内嵌套循环
-   修复：使用 Map/Set 优化查找
+1. Nested Loops O(n^2)
+   Detection: Loop inside loop
+   Fix: Use Map/Set for lookups
    
-   // ❌ BAD - O(n²)
+   // BAD - O(n^2)
    for (const a of arrayA) {
      for (const b of arrayB) {
        if (a.id === b.id) { ... }
      }
    }
    
-   // ✅ GOOD - O(n)
+   // GOOD - O(n)
    const bMap = new Map(arrayB.map(b => [b.id, b]));
    for (const a of arrayA) {
      const b = bMap.get(a.id);
      if (b) { ... }
    }
 
-2. 重复计算
-   识别：循环内重复计算不变值
-   修复：提取到循环外
+2. Repeated Computations
+   Detection: Recomputing invariant values inside loops
+   Fix: Extract outside loop
 
-3. 大数组操作
-   识别：大数组的 filter/map/reduce 链式调用
-   修复：单次遍历，避免中间数组
+3. Large Array Operations
+   Detection: Chained filter/map/reduce on large arrays
+   Fix: Single pass, avoid intermediate arrays
 ```
 
-### 内存管理 (Memory)
+### Memory Management
 
 ```markdown
-常见问题:
+Common Issues:
 
-1. 内存泄漏
-   识别：事件监听器未清理、定时器未取消
-   修复：添加 cleanup 逻辑
+1. Memory Leaks
+   Detection: Event listeners not cleaned up, timers not cancelled
+   Fix: Add cleanup logic
 
-2. 大对象持有
-   识别：缓存无上限、大字符串拼接
-   修复：使用 LRU 缓存、流式处理
+2. Large Object Retention
+   Detection: Unbounded cache, large string concatenations
+   Fix: Use LRU cache, stream processing
 
-3. 未释放资源
-   识别：文件句柄、数据库连接未关闭
-   修复：使用 try-finally 或 with 语句
+3. Unreleased Resources
+   Detection: File handles, database connections not closed
+   Fix: Use try-finally or with statements
 ```
 
-### 异步处理 (Async)
+### Async Processing
 
 ```markdown
-常见问题:
+Common Issues:
 
-1. 串行执行可并行操作
-   识别：连续的 await 无依赖关系
-   修复：使用 Promise.all
+1. Serial Execution of Parallelizable Operations
+   Detection: Consecutive awaits without dependencies
+   Fix: Use Promise.all
    
-   // ❌ BAD - 串行
+   // BAD - Serial
    const user = await fetchUser(id);
    const posts = await fetchPosts(id);
    const comments = await fetchComments(id);
    
-   // ✅ GOOD - 并行
+   // GOOD - Parallel
    const [user, posts, comments] = await Promise.all([
      fetchUser(id),
      fetchPosts(id),
      fetchComments(id)
    ]);
 
-2. 阻塞操作
-   识别：同步 IO 在主线程
-   修复：使用异步 API
+2. Blocking Operations
+   Detection: Synchronous IO on main thread
+   Fix: Use async APIs
 
-3. 竞态条件
-   识别：异步操作顺序依赖
-   修复：添加锁或队列
+3. Race Conditions
+   Detection: Async operations with order dependencies
+   Fix: Add locks or queues
 ```
 
-### 缓存策略 (Cache)
+### Cache Strategy
 
 ```markdown
-常见问题:
+Common Issues:
 
-1. 缺少缓存
-   识别：重复计算/查询相同数据
-   修复：添加适当缓存
+1. Missing Cache
+   Detection: Repeated computation/queries for same data
+   Fix: Add appropriate caching
 
-2. 缓存失效
-   识别：数据更新后缓存未失效
-   修复：添加失效逻辑
+2. Cache Invalidation
+   Detection: Cache not invalidated after data updates
+   Fix: Add invalidation logic
 
-3. 缓存穿透
-   识别：查询不存在的数据
-   修复：缓存空值或使用布隆过滤器
+3. Cache Penetration
+   Detection: Queries for non-existent data
+   Fix: Cache null values or use bloom filters
 ```
 
 ## Impact Estimation
 
-| 改进 | 低影响 | 中影响 | 高影响 |
-|------|--------|--------|--------|
-| **响应时间** | <10% | 10-50% | >50% |
-| **吞吐量** | <10% | 10-50% | >50% |
-| **内存使用** | <10% | 10-30% | >30% |
+| Improvement | Low Impact | Medium Impact | High Impact |
+|-------------|------------|---------------|-------------|
+| **Response Time** | <10% | 10-50% | >50% |
+| **Throughput** | <10% | 10-50% | >50% |
+| **Memory Usage** | <10% | 10-30% | >30% |
 
 ## Output Template
 
@@ -226,10 +226,10 @@
 ## Performance Review Report
 
 ### Summary
-- 总评论数：X
-- 性能问题数：Y
-- 误报数：Z
-- 优化机会：W
+- Total Comments: X
+- Performance Issues: Y
+- False Positives: Z
+- Optimization Opportunities: W
 
 ### Issues Found
 
@@ -240,64 +240,64 @@
 **Location:** `{file}:{line}`
 
 **Impact:**
-{性能影响描述，如：每次请求增加 100ms 延迟}
+{Performance impact description, e.g., adds 100ms latency per request}
 
 **Description:**
-{详细描述}
+{Detailed description}
 
 **Evidence:**
 ```{language}
-{问题代码}
+{Problem code}
 ```
 
 **Fix Suggestion:**
 ```{language}
-{修复代码}
+{Fix code}
 ```
 
 **Estimated Improvement:**
-{预期改进，如：减少 80% 查询时间}
+{Expected improvement, e.g., reduces query time by 80%}
 
 ### False Positives
 
 | Comment ID | Reason |
 |------------|--------|
-| #{id} | {原因，如：数据量小，无需优化} |
+| #{id} | {Reason, e.g., small data volume, no optimization needed} |
 
 ### Optimization Opportunities
 
-除了评论中提到的问题，以下优化也值得考虑：
+In addition to issues mentioned in comments, the following optimizations are also worth considering:
 
-| 优化 | 工作量 | 影响 |
-|------|--------|------|
-| {描述} | low/medium/high | low/medium/high |
+| Optimization | Effort | Impact |
+|--------------|--------|--------|
+| {Description} | low/medium/high | low/medium/high |
 ```
 
 ## Context-Aware Analysis
 
-根据项目上下文调整建议：
+Adjust recommendations based on project context:
 
 ```markdown
 IF data_volume == "small" AND qps == "low":
-    优先级降低，避免过度优化
-    建议：简单方案优先
+    Lower priority, avoid over-optimization
+    Suggestion: Prefer simple solutions
 
 IF latency_requirement == "strict":
-    优先级提高
-    建议：性能最优方案
+    Higher priority
+    Suggestion: Performance-optimal solution
 
 IF project_stage == "prototype":
-    标记为"后续优化"
-    建议：记录技术债务
+    Mark as "optimize later"
+    Suggestion: Record as technical debt
 ```
 
 ## Quality Checks
 
-- [ ] 性能影响有量化估计
-- [ ] 修复建议考虑了 trade-off
-- [ ] 没有建议过度优化
-- [ ] 考虑了项目实际场景
-- [ ] 误报有清晰解释
+- [ ] Performance impact has quantitative estimates
+- [ ] Fix suggestions consider trade-offs
+- [ ] No over-optimization suggested
+- [ ] Project actual scenarios considered
+- [ ] False positives have clear explanations
 
 ---
 

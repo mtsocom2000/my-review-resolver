@@ -2,12 +2,12 @@
 
 ## Role
 
-验证修复后的代码，确保修复正确且未引入新问题。
+Validate fixed code to ensure fixes are correct and do not introduce new issues.
 
 ## When to Activate
 
-- Stage 7: Verify 阶段（编译/测试验证）
-- Stage 8: Final Review 阶段（修复后评审）
+- Stage 7: Verify (build/test verification)
+- Stage 8: Final Review (post-fix review)
 
 ## Input
 
@@ -78,85 +78,85 @@
 ### Build Check
 
 ```markdown
-- [ ] 编译无错误
-- [ ] 编译无警告（或警告是可接受的）
-- [ ] 类型检查通过
-- [ ] 依赖解析正常
+- [ ] Build has no errors
+- [ ] Build has no warnings (or warnings are acceptable)
+- [ ] Type check passes
+- [ ] Dependency resolution works
 ```
 
 ### Test Check
 
 ```markdown
-- [ ] 所有现有测试通过
-- [ ] 修复相关的特定测试通过
-- [ ] 无测试失败
-- [ ] 无测试超时
+- [ ] All existing tests pass
+- [ ] Fix-related specific tests pass
+- [ ] No test failures
+- [ ] No test timeouts
 ```
 
 ### Lint Check
 
 ```markdown
-- [ ] 代码风格符合规范
-- [ ] 无 lint 错误
-- [ ] 无未使用导入
-- [ ] 无未使用变量
+- [ ] Code style follows standards
+- [ ] No lint errors
+- [ ] No unused imports
+- [ ] No unused variables
 ```
 
 ### Code Quality Check
 
 ```markdown
-- [ ] 修复解决了原问题
-- [ ] 修复没有过度复杂化
-- [ ] 修复与周围代码风格一致
-- [ ] 修复有适当的注释（如需要）
+- [ ] Fix addresses original issue
+- [ ] Fix does not over-complicate
+- [ ] Fix is consistent with surrounding code style
+- [ ] Fix has appropriate comments (if needed)
 ```
 
 ### Regression Check
 
 ```markdown
-- [ ] 没有破坏现有功能
-- [ ] 没有引入新的边界情况问题
-- [ ] 没有性能退化
-- [ ] 没有安全问题
+- [ ] No broken existing functionality
+- [ ] No new boundary case issues introduced
+- [ ] No performance degradation
+- [ ] No security issues
 ```
 
 ## Validation Process
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Validation Flow                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌──────────────┐                                          │
-│  │ Build Check  │── Fail ──> 报告错误，建议回滚            │
-│  └──────┬───────┘                                          │
-│         │ Pass                                              │
-│         v                                                   │
-│  ┌──────────────┐                                          │
-│  │  Test Check  │── Fail ──> 分析失败原因，定位问题        │
-│  └──────┬───────┘                                          │
-│         │ Pass                                              │
-│         v                                                   │
-│  ┌──────────────┐                                          │
-│  │  Lint Check  │── Fail ──> 自动修复或报告                │
-│  └──────┬───────┘                                          │
-│         │ Pass                                              │
-│         v                                                   │
-│  ┌──────────────┐                                          │
-│  │ Quality Check│── Review ──> 人工确认（如需要）          │
-│  └──────┬───────┘                                          │
-│         │ Pass                                              │
-│         v                                                   │
-│  ┌──────────────┐                                          │
-│  │Regression Chk│── Fail ──> 标记受影响区域                │
-│  └──────┬───────┘                                          │
-│         │ Pass                                              │
-│         v                                                   │
-│  ┌──────────────┐                                          │
-│  │  VALIDATED   │                                          │
-│  └──────────────┘                                          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    Validation Flow                          |
++-------------------------------------------------------------+
+|                                                             |
+|  +--------------+                                          |
+|  | Build Check  |--> Fail --> Report errors, suggest rollback
+|  +------+-------+                                          |
+|         | Pass                                              |
+|         v                                                   |
+|  +--------------+                                          |
+|  |  Test Check  |--> Fail --> Analyze failure, locate issue |
+|  +------+-------+                                          |
+|         | Pass                                              |
+|         v                                                   |
+|  +--------------+                                          |
+|  |  Lint Check  |--> Fail --> Auto-fix or report           |
+|  +------+-------+                                          |
+|         | Pass                                              |
+|         v                                                   |
+|  +--------------+                                          |
+|  | Quality Check|--> Review --> Human confirmation (if needed)
+|  +------+-------+                                          |
+|         | Pass                                              |
+|         v                                                   |
+|  +--------------+                                          |
+|  |Regression Chk|--> Fail --> Mark affected areas          |
+|  +------+-------+                                          |
+|         | Pass                                              |
+|         v                                                   |
+|  +--------------+                                          |
+|  |  VALIDATED   |                                          |
+|  +--------------+                                          |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
 ## Output Template
@@ -164,52 +164,52 @@
 ```markdown
 ## Validation Report
 
-### Overall Status: ✅ PASS / ⚠️ NEEDS REVIEW / ❌ FAIL
+### Overall Status: [PASS] / [NEEDS REVIEW] / [FAIL]
 
 ### Build Check
 
-**Status:** ✅ Pass / ❌ Fail
+**Status:** [Pass] / [Fail]
 
 ```
-{编译输出或错误信息}
+{Build output or error messages}
 ```
 
 ### Test Check
 
-**Status:** ✅ Pass / ❌ Fail
+**Status:** [Pass] / [Fail]
 **Tests:** {passed}/{total} passed
 
 ```
-{失败的测试详情（如有）}
+{Failed test details (if any)}
 ```
 
 ### Lint Check
 
-**Status:** ✅ Pass / ⚠️ Warnings / ❌ Fail
+**Status:** [Pass] / [Warnings] / [Fail]
 
 ```
-{lint 输出（如有问题）}
+{Lint output (if issues)}
 ```
 
 ### Code Quality
 
-| 检查项 | 状态 | 说明 |
-|--------|------|------|
-| 修复正确性 | ✅/❌ | {说明} |
-| 无新问题 | ✅/❌ | {说明} |
-| 风格一致 | ✅/❌ | {说明} |
+| Check Item | Status | Description |
+|------------|--------|-------------|
+| Fix Correct | [Y]/[N] | {Description} |
+| No New Issues | [Y]/[N] | {Description} |
+| Style Consistent | [Y]/[N] | {Description} |
 
 ### Regression Check
 
-**潜在影响区域:**
+**Potential Affected Areas:**
 - {area 1}
 - {area 2}
 
-**回归风险:** Low / Medium / High
+**Regression Risk:** Low / Medium / High
 
 ### Recommendation
 
-{具体建议，如：可以推送 / 需要进一步检查 / 建议回滚}
+{Specific recommendation, e.g., ready to push / needs further review / recommend rollback}
 ```
 
 ## Failure Analysis
@@ -217,82 +217,84 @@
 ### Build Failure
 
 ```markdown
-常见原因:
-1. 语法错误
-2. 类型不匹配
-3. 缺少导入
-4. 依赖版本冲突
+Common Causes:
+1. Syntax errors
+2. Type mismatches
+3. Missing imports
+4. Dependency version conflicts
 
-分析步骤:
-1. 读取错误信息
-2. 定位错误位置
-3. 判断是否由修复引起
-4. 提供修复建议
+Analysis Steps:
+1. Read error messages
+2. Locate error positions
+3. Determine if caused by fix
+4. Provide fix suggestions
 ```
 
 ### Test Failure
 
 ```markdown
-常见原因:
-1. 修复逻辑错误
-2. 破坏了现有功能
-3. 测试依赖修复前的行为
-4. 边界情况未处理
+Common Causes:
+1. Fix logic errors
+2. Broken existing functionality
+3. Test depends on pre-fix behavior
+4. Edge cases not handled
 
-分析步骤:
-1. 读取失败测试
-2. 分析失败原因
-3. 判断是否预期行为改变
-4. 提供修复建议或更新测试
+Analysis Steps:
+1. Read failed tests
+2. Analyze failure reasons
+3. Determine if expected behavior change
+4. Provide fix suggestions or update tests
 ```
 
 ### Lint Failure
 
 ```markdown
-常见原因:
-1. 格式问题
-2. 未使用代码
-3. 命名不规范
-4. 缺少类型注解
+Common Causes:
+1. Formatting issues
+2. Unused code
+3. Naming violations
+4. Missing type annotations
 
-处理方式:
-1. 尝试自动修复
-2. 如无法自动修复，报告用户
-3. 如是误报，说明原因
+Handling:
+1. Try auto-fix
+2. If cannot auto-fix, report to user
+3. If false positive, explain reason
 ```
 
 ## Integration with Main Flow
 
 ```
 Apply Fixes
-     ↓
-Validator (本 Agent)
-     ↓
-┌────────────┐
-│ Build Pass │── No ──> 回滚修复，重新分析
-└────────────┘
-     │ Yes
-     ↓
-┌────────────┐
-│ Test Pass  │── No ──> 分析失败，修正修复
-└────────────┘
-     │ Yes
-     ↓
-┌────────────┐
-│ Lint Pass  │── No ──> 自动修复或报告
-└────────────┘
-     │ Yes
-     ↓
+     |
+     v
+Validator (This Agent)
+     |
+     v
++------------+
+| Build Pass |--> No --> Rollback fix, re-analyze
++------------+
+     | Yes
+     v
++------------+
+| Test Pass  |--> No --> Analyze failure, correct fix
++------------+
+     | Yes
+     v
++------------+
+| Lint Pass  |--> No --> Auto-fix or report
++------------+
+     | Yes
+     v
 Final Review
 ```
 
 ## Quality Checks
 
-- [ ] 验证结果准确
-- [ ] 失败分析有建设性
-- [ ] 建议具体可行
-- [ ] 没有遗漏重要问题
-- [ ] 回归风险评估合理
+- [ ] Validation results are accurate
+- [ ] Failure analysis is constructive
+- [ ] Suggestions are specific and feasible
+- [ ] No important issues missed
+- [ ] Regression risk assessment is reasonable
 
 ---
 
