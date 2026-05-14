@@ -10,54 +10,28 @@ PR Comment Fix skill automatically integrates with ECC (Everything Claude Code) 
 
 ### Automatic Detection
 
-When the skill runs, it automatically detects ECC installation:
+At pipeline start, the skill runs the ECC detector script:
 
-```typescript
-import { detectECC } from './lib/ecc-detector';
-
-const ecc = detectECC();
-if (ecc.installed) {
-  console.log(`✅ ECC detected: ${ecc.agents.length} agents available`);
-} else {
-  console.log('ℹ️ ECC not installed, using fallback agents');
-}
 ```
+Running detection:
+  tsx ./lib/ecc-detector.ts
+
+If installed:      Use ECC agents for Stage 5 parallel review
+If not installed:  Use built-in agents from agents/ (same pipeline, fewer specialized reviewers)
+```
+
+The detection result feeds into Stage 5 of the pipeline, selecting appropriate reviewers based on file extensions.
 
 ### Enhanced Review with ECC
 
-When ECC is available, the skill uses specialized agents for parallel review:
+When ECC is available, the skill spawns specialized agents in parallel:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  PR Comment Received                                        │
-└─────────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-              ┌───────────────────────┐
-              │   ECC Installed?      │
-              └───────────────────────┘
-                     │          │
-                Yes  │          │  No
-                     ▼          ▼
-        ┌─────────────────┐  ┌─────────────────┐
-        │  ECC Agents     │  │  Fallback       │
-        │  - security-    │  │  Agents         │
-        │    reviewer     │  │  - Built-in     │
-        │  - performance- │  │    subagents    │
-        │    optimizer    │  │                 │
-        │  - code-        │  │                 │
-        │    reviewer     │  │                 │
-        │  - language-    │  │                 │
-        │    specific     │  │                 │
-        └─────────────────┘  └─────────────────┘
-                     │          │
-                     └──────────┘
-                          │
-                          ▼
-              ┌───────────────────────┐
-              │  Consolidate Results  │
-              └───────────────────────┘
-```
+- **Security**: ECC `security-reviewer` (always)
+- **Performance**: ECC `performance-optimizer` (always)
+- **Quality**: ECC `code-reviewer` (always)
+- **Language-specific**: Selected by file extension (.ts → typescript-reviewer, .py → python-reviewer, etc.)
+
+All agents receive the same input (diff + file contents + comment context) and return structured findings. Results are deduplicated and merged by the orchestrator.
 
 ---
 
@@ -74,26 +48,17 @@ cd my-review-resolver
 ### Step 2 (Optional): Install ECC for Enhanced Review
 
 ```bash
-# Clone ECC
 git clone https://github.com/affaan-m/everything-claude-code.git
 cd everything-claude-code
-
-# Install dependencies
 npm install
-
-# Install agents and skills
 ./install.sh --profile full
 ```
 
 ### Verify Installation
 
 ```bash
-# Check ECC
 npx tsx lib/ecc-detector.ts
-
-# Should output:
-# ✅ ECC installed
-#    Agents: 48
+# Expected: ✅ ECC installed, Agents: 48
 ```
 
 ---
@@ -136,18 +101,42 @@ Same command, automatically uses ECC agents if available:
 
 ### Language-Specific Reviewers
 
-Automatically selected based on file type:
+Automatically selected based on file type from Stage 6 (Parallel Review):
 
-| File Type | Agent |
-|-----------|-------|
-| .ts, .tsx, .js, .jsx | `typescript-reviewer` |
-| .py | `python-reviewer` |
-| .java | `java-reviewer` |
-| .go | `go-reviewer` |
-| .rs | `rust-reviewer` |
-| .kt | `kotlin-reviewer` |
-| .cpp, .cc, .h | `cpp-reviewer` |
-| .sql | `database-reviewer` |
+| File Type | ECC Agent (primary) | Built-in Agent (fallback) |
+|-----------|--------------------|---------------------------|
+| .ts, .tsx, .js, .jsx | `typescript-reviewer` | `agents/quality.md` |
+| .py | `python-reviewer` | `agents/quality.md` |
+| .java | `java-reviewer` | `agents/quality.md` |
+| .go | `go-reviewer` | `agents/quality.md` |
+| .rs | `rust-reviewer` | `agents/quality.md` |
+| .kt | `kotlin-reviewer` | `agents/quality.md` |
+| .cpp, .cc, .h | `cpp-reviewer` | `agents/quality.md` |
+| .sql | `database-reviewer` | `agents/quality.md` |
+
+---
+
+## Pipeline Integration (v2.3.0+)
+
+ECC agents are used in **Stage 6 (Parallel Review)**. The full pipeline:
+
+```
+Stage 0: URL Validation
+Stage 1: Branch Check
+Stage 2: Sync Latest
+Stage 3: Fetch Comments
+Stage 4: Analyze Comments (analyzer.md) — individual comment validity
+Stage 5: Dependency Graph (dependency-analyzer.md) — NEW: clusters, conflicts, supersedes
+Stage 6: Parallel Review — ECC agents OR built-in agents
+Stage 7: Apply Fixes — follows resolution_order from Stage 5
+Stage 8: Verify
+Stage 9: Final Review (validator.md)
+Stage 10: Push Confirmation
+Stage 11: Reply to Comments
+Stage 12: Summary (optional)
+```
+
+**Stage 5 (Dependency Graph) runs before Stage 6**, so ECC reviewers receive the clustered analysis context. This means the dependency-analyzer has already determined which comments share root causes before ECC agents start their parallel review.
 
 ---
 
@@ -155,12 +144,13 @@ Automatically selected based on file type:
 
 If ECC is not installed:
 
-1. **Built-in Agents**: Uses skill's built-in subagents
-   - `analyzer` - Comment analysis
-   - `security` - Security review
-   - `performance` - Performance review
-   - `quality` - Code quality review
-   - `validator` - Fix verification
+1. **Built-in Agents**: Uses skill's built-in subagents from `agents/`:
+   - `analyzer.md` — Comment validity analysis (Stage 4)
+   - `dependency-analyzer.md` — Comment dependency graph (Stage 5) — NEW
+   - `security.md` — Security review (Stage 6)
+   - `performance.md` — Performance review (Stage 6)
+   - `quality.md` — Code quality review (Stage 6)
+   - `validator.md` — Post-fix validation (Stage 9)
 
 2. **Same Workflow**: All stages work identically
    - Comment analysis
@@ -174,77 +164,28 @@ If ECC is not installed:
 
 ## Configuration
 
-### Environment Variables
+Environment variables are documented in the main SKILL.md and README. Key ECC-related:
 
 ```bash
 # ECC installation path (if non-standard)
-export ECC_INSTALL_PATH=/custom/path/to/ecc
+export ECC_INSTALL_PATH=/path/to/ecc
 
 # Enable debug logging
 export ECC_DEBUG=true
-
-# Skip ECC detection (always use fallback)
-export ECC_SKIP_DETECTION=true
 ```
 
-### Skill Configuration
-
-In `~/.config/pr-comment-fix/config`:
-
-```bash
-# Prefer ECC agents (default: true)
-ECC_PREFER_AGENTS=true
-
-# Fallback timeout (ms)
-ECC_FALLBACK_TIMEOUT=5000
-
-# Parallel review agents
-ECC_REVIEW_AGENTS=security-reviewer,performance-optimizer,code-reviewer
-```
+No additional config file is needed. ECC detection is automatic via `lib/ecc-detector.ts`.
 
 ---
 
-## API Reference
+## Detection Method
 
-### detectECC()
+The skill runs `tsx ./lib/ecc-detector.ts` at pre-flight. This script checks for:
+1. ECC plugin installation (`~/.claude/agents/`)
+2. Agent file count and names
+3. ECC tooling availability (`npm list -g ecc-universal`)
 
-Detect ECC installation.
-
-```typescript
-import { detectECC } from './lib/ecc-detector';
-
-const ecc = detectECC();
-console.log(ecc.installed);  // boolean
-console.log(ecc.agents);     // ECCAgent[]
-```
-
-### getReviewAgents()
-
-Get all review agents.
-
-```typescript
-import { getReviewAgents } from './lib/ecc-detector';
-
-const agents = getReviewAgents();
-// Returns: typescript-reviewer, security-reviewer, etc.
-```
-
-### buildParallelReviewTasks()
-
-Build parallel review tasks for subagent spawning.
-
-```typescript
-import { buildParallelReviewTasks } from './lib/ecc-detector';
-
-const tasks = buildParallelReviewTasks({
-  diff: '...',
-  comment: 'Add error handling',
-  filePath: 'src/api.ts',
-  language: 'typescript'
-});
-
-// Returns array of tasks for subagent spawning
-```
+Output is JSON `{installed: boolean, agents: string[], paths: {...}}`.
 
 ---
 
@@ -252,69 +193,39 @@ const tasks = buildParallelReviewTasks({
 
 ### ECC Not Detected
 
-**Symptom**: Skill reports "ECC not installed" but you installed it
+**Symptom**: Skill reports "ECC not installed" but ECC is installed
 
 **Solution**:
 ```bash
-# Verify ECC installation
+# Verify ECC agents directory
 ls -la ~/.claude/agents/
 
-# Should show agent files
-# If empty, reinstall ECC:
+# If empty, reinstall ECC minimal profile:
 cd everything-claude-code
-./install.sh --profile full
+./install.sh --profile minimal --target claude
 ```
 
-### Agent Loading Errors
+### Review takes too long
 
-**Symptom**: "Failed to load agent" errors
+**Symptom**: Stage 6 parallel review is slow
 
 **Solution**:
-```bash
-# Check agent files
-cat ~/.claude/agents/security-reviewer.md
-
-# If corrupted, repair ECC
-cd everything-claude-code
-npx ecc repair
-```
-
-### Slow Review
-
-**Symptom**: Parallel review takes too long
-
-**Solution**:
-```bash
-# Reduce number of agents
-export ECC_REVIEW_AGENTS=security-reviewer,code-reviewer
-
-# Or skip ECC entirely
-export ECC_SKIP_DETECTION=true
-```
-
----
-
-## Performance Comparison
-
-| Configuration | Review Time | Coverage |
-|---------------|-------------|----------|
-| ECC (3 agents) | ~15-30s | Comprehensive |
-| ECC (1 agent) | ~5-10s | Good |
-| Fallback | ~5-10s | Basic |
+Stage 6 runs all review agents in parallel. If ECC has many agents, this can be slow. The SKILL.md specifies a 60-second timeout per agent, after which the pipeline proceeds without that agent's findings.
 
 ---
 
 ## Version History
 
-### v2.1.0 (Current)
-- ✅ ECC integration
-- ✅ Automatic detection
-- ✅ Graceful fallback
-- ✅ Language-specific reviewers
+### v2.3.0 (Current)
+- Stage 5 Dependency Graph runs BEFORE ECC review — so dependency clusters feed into ECC agent context
+- No TypeScript API import path — ECC is detected via `tsx` script execution, not import
+- Architecture change: all API calls are script-backed, not model-generated
 
-### v2.0.0
-- Built-in subagents only
-- No ECC integration
+### v2.1.0
+- ECC integration
+- Automatic detection
+- Graceful fallback
+- Language-specific reviewers
 
 ---
 
@@ -322,9 +233,3 @@ export ECC_SKIP_DETECTION=true
 
 - **ECC Issues**: https://github.com/affaan-m/everything-claude-code/issues
 - **Skill Issues**: https://github.com/mtsocom2000/my-review-resolver/issues
-
----
-
-## License
-
-MIT License - Same as parent project.

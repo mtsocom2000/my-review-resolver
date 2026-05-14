@@ -2,13 +2,13 @@
 
 ## PR Comments API
 
-### 获取 PR 行内评论
+### Fetch PR inline comments
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --paginate
 ```
 
-**响应字段:**
+**Response fields:**
 ```json
 {
   "id": 12345,
@@ -22,19 +22,19 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --paginate
 }
 ```
 
-### 获取 PR 通用评论 (Issue Comments)
+### Fetch PR general comments (Issue Comments)
 
 ```bash
 gh api repos/{owner}/{repo}/issues/{pr_number}/comments --paginate
 ```
 
-### 获取 PR 审查 (Reviews)
+### Fetch PR reviews
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews --paginate
 ```
 
-**响应字段:**
+**Response fields:**
 ```json
 {
   "id": 67890,
@@ -45,7 +45,7 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews --paginate
 }
 ```
 
-### 回复评论
+### Reply to a comment
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
@@ -53,7 +53,7 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
   -f body="Reply text"
 ```
 
-### 发布总结评论
+### Post a summary comment
 
 ```bash
 gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
@@ -65,13 +65,13 @@ gh api repos/{owner}/{repo}/issues/{pr_number}/comments \
 
 ## PR Info API
 
-### 获取 PR 详情
+### Get PR details
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}
 ```
 
-**响应字段:**
+**Response fields:**
 ```json
 {
   "number": 123,
@@ -94,13 +94,13 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}
 }
 ```
 
-### 获取 PR 文件变更
+### Get PR file changes
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/files --paginate
 ```
 
-**响应字段:**
+**Response fields:**
 ```json
 {
   "filename": "src/file.ts",
@@ -116,7 +116,7 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/files --paginate
 
 ## Git Operations
 
-### 检查分支
+### Check branch
 
 ```bash
 git branch --show-current
@@ -125,16 +125,16 @@ git status --porcelain
 git rev-parse --abbrev-ref '@{u}' 2>/dev/null || echo "no upstream"
 ```
 
-### 同步分支
+### Sync branch
 
 ```bash
 git fetch origin branch
 git merge origin/branch --no-edit
-# 或
+# or
 git rebase origin/branch
 ```
 
-### 获取 commits 差异
+### Get commit differences
 
 ```bash
 git rev-list remote_commit..local_commit --oneline
@@ -142,23 +142,23 @@ git rev-list remote_commit..local_commit --oneline
 
 ---
 
-## jq 过滤示例
+## jq Filter Examples
 
-### 提取评论关键信息
+### Extract key comment info
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments | \
   jq '.[] | {id, path, line, body: .body[0:100], user: .user.login}'
 ```
 
-### 按文件分组评论
+### Group comments by file
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments | \
   jq 'group_by(.path) | .[] | {file: .[0].path, count: length, comments: .}'
 ```
 
-### 提取审查状态
+### Extract review states
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews | \
@@ -169,19 +169,19 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews | \
 
 ## Error Handling
 
-### 常见错误
+### Common errors
 
-| HTTP 状态码 | 含义 | 处理 |
-|-------------|------|------|
-| 404 | 资源不存在 | 检查 owner/repo/pr_number |
-| 403 | 无权限 | 检查 gh 认证 |
-| 422 | 验证失败 | 检查参数格式 |
-| 401 | 未认证 | 运行 `gh auth login` |
+| HTTP Status | Meaning | Action |
+|-------------|---------|--------|
+| 404 | Resource not found | Verify owner/repo/pr_number |
+| 403 | No permission | Check gh authentication |
+| 422 | Validation failed | Check parameter format |
+| 401 | Not authenticated | Run `gh auth login` |
 
-### 重试逻辑
+### Retry logic
 
 ```bash
-# 带重试的 API 调用
+# Retry wrapper for API calls
 retry_api() {
     local max_attempts=3
     local attempt=1
@@ -190,7 +190,7 @@ retry_api() {
         if gh api "$@" 2>/dev/null; then
             return 0
         fi
-        echo "Attempt $attempt failed, retrying..."
+        echo "Attempt $attempt failed, retrying..." >&2
         sleep 1
         ((attempt++))
     done
@@ -203,15 +203,15 @@ retry_api() {
 
 ## Rate Limits
 
-| 类型 | 限制 |
-|------|------|
-| 核心 API | 5000 requests/hour |
+| Type | Limit |
+|------|-------|
+| Core API | 5000 requests/hour |
 | GraphQL | 5000 nodes/hour |
 | Search | 30 requests/minute |
 
-检查剩余配额:
+Check remaining quota:
 ```bash
-gh api rate_limit
+gh api rate_limit | jq '{core: .resources.core.remaining, graphql: .resources.graphql.remaining}'
 ```
 
 ---

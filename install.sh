@@ -1,10 +1,10 @@
 #!/bin/bash
-# install.sh - PR Comment Fix Skill 安装脚本
-# 支持：Claude Code, Cursor, VSCode, OpenCode
+# install.sh - PR Comment Fix Skill installer
+# Supports: Claude Code, Cursor, VSCode, OpenCode
 
 set -e
 
-# 颜色
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -20,7 +20,7 @@ echo -e "${CYAN}║  PR Comment Fix Skill - Installer                     ║${N
 echo -e "${CYAN}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# 检测平台
+# Detect platform
 detect_platform() {
     if [ -d "$HOME/.claude" ]; then
         echo "claude-code"
@@ -35,16 +35,13 @@ detect_platform() {
     fi
 }
 
-# 安装到 Claude Code
+# Install to Claude Code
 install_claude_code() {
     local target_dir="$HOME/.claude/skills/$SKILL_NAME"
     
     echo -e "${BLUE}Installing to Claude Code...${NC}"
     
-    # 创建目录
     mkdir -p "$target_dir"
-    
-    # 复制文件
     cp -r "$SKILL_DIR/SKILL.md" "$target_dir/"
     cp -r "$SKILL_DIR/agents/" "$target_dir/" 2>/dev/null || true
     cp -r "$SKILL_DIR/scripts/" "$target_dir/" 2>/dev/null || true
@@ -52,14 +49,14 @@ install_claude_code() {
     cp -r "$SKILL_DIR/lib/" "$target_dir/" 2>/dev/null || true
     cp -r "$SKILL_DIR/ecc-adapter/" "$target_dir/" 2>/dev/null || true
     
-    echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
+    echo -e "${GREEN}Installed to: $target_dir${NC}"
     echo ""
     echo -e "${YELLOW}Usage in Claude Code:${NC}"
     echo "  /skill load pr-comment-fix"
     echo "  Or ask: 'Help me fix PR comments'"
 }
 
-# 安装到 Cursor
+# Install to Cursor
 install_cursor() {
     local target_dir="$HOME/.cursor/skills/$SKILL_NAME"
     
@@ -68,14 +65,14 @@ install_cursor() {
     mkdir -p "$target_dir"
     cp -r "$SKILL_DIR/SKILL.md" "$target_dir/"
     
-    echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
+    echo -e "${GREEN}Installed to: $target_dir${NC}"
     echo ""
     echo -e "${YELLOW}Usage in Cursor:${NC}"
     echo "  Add @pr-comment-fix in chat"
     echo "  Or install as plugin from marketplace"
 }
 
-# 安装到 VSCode (GitHub Copilot)
+# Install to VSCode (GitHub Copilot)
 install_vscode() {
     local target_dir="$HOME/.vscode/copilot/skills/$SKILL_NAME"
     
@@ -84,13 +81,13 @@ install_vscode() {
     mkdir -p "$target_dir"
     cp -r "$SKILL_DIR/SKILL.md" "$target_dir/"
     
-    echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
+    echo -e "${GREEN}Installed to: $target_dir${NC}"
     echo ""
     echo -e "${YELLOW}Usage in VSCode:${NC}"
     echo "  Use in Copilot chat: @pr-comment-fix"
 }
 
-# 安装到 OpenCode
+# Install to OpenCode
 install_opencode() {
     local target_dir="$HOME/.opencode/skills/$SKILL_NAME"
     
@@ -100,13 +97,13 @@ install_opencode() {
     cp -r "$SKILL_DIR/SKILL.md" "$target_dir/"
     cp -r "$SKILL_DIR/agents/" "$target_dir/" 2>/dev/null || true
     
-    echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
+    echo -e "${GREEN}Installed to: $target_dir${NC}"
     echo ""
     echo -e "${YELLOW}Usage in OpenCode:${NC}"
     echo "  /skill load pr-comment-fix"
 }
 
-# 创建项目级安装（当前项目）
+# Install locally (current project)
 install_local() {
     local target_dir="./.claude/skills/$SKILL_NAME"
     
@@ -118,13 +115,13 @@ install_local() {
     cp -r "$SKILL_DIR/scripts/" "$target_dir/" 2>/dev/null || true
     cp -r "$SKILL_DIR/references/" "$target_dir/" 2>/dev/null || true
     
-    echo -e "${GREEN}✓ Installed to: $target_dir${NC}"
+    echo -e "${GREEN}Installed to: $target_dir${NC}"
     echo ""
     echo -e "${YELLOW}Usage:${NC}"
     echo "  Skill will auto-load for this project"
 }
 
-# 主菜单
+# Main menu
 main() {
     echo "Select installation target:"
     echo ""
@@ -176,7 +173,7 @@ main() {
             rm -rf "$HOME/.vscode/copilot/skills/$SKILL_NAME"
             rm -rf "$HOME/.opencode/skills/$SKILL_NAME"
             rm -rf "./.claude/skills/$SKILL_NAME"
-            echo -e "${GREEN}✓ Uninstalled from all platforms${NC}"
+            echo -e "${GREEN}Uninstalled from all platforms${NC}"
             ;;
         *)
             echo -e "${RED}Invalid choice${NC}"
@@ -185,7 +182,7 @@ main() {
     esac
 }
 
-# 自动检测并安装
+# Auto-detect and install
 auto_install() {
     local platform
     platform=$(detect_platform)
@@ -214,7 +211,7 @@ auto_install() {
     esac
 }
 
-# 命令行参数
+# CLI argument dispatch
 if [ "$1" == "--auto" ]; then
     auto_install
 elif [ "$1" == "--claude" ]; then

@@ -1,308 +1,223 @@
-# Test Data - Mock PR Comments
+# Test Data — Mock PR Comments (v2.2.0 JSON format)
+
+These fixture files are structured to match the JSON output of `scripts/fetch-pr-comments.sh`.
+
+---
 
 ## Test Case 1: Mixed Comments (Security + Performance + Quality)
 
-**PR URL:** `https://github.com/example/api-service/pull/42`
-**Branch:** `feature/user-auth`
-
-### Mock Comments
-
 ```json
 {
+  "status": "ok",
+  "owner": "example",
+  "repo": "api",
+  "number": 42,
   "pr_info": {
-    "owner": "example",
-    "repo": "api-service",
-    "number": 42,
-    "branch": "feature/user-auth",
-    "base_branch": "main"
+    "title": "Add user authentication module",
+    "state": "open",
+    "head": {"ref": "feature/auth", "sha": "abc123def"},
+    "base": {"ref": "main", "sha": "789xyz"},
+    "additions": 245,
+    "deletions": 30,
+    "changed_files": 5
   },
-  "comments": [
-    {
-      "id": "1001",
-      "author": "security-bot",
-      "body": "⚠️ SQL Injection Risk: User input is directly concatenated into the query. Use parameterized queries instead.",
-      "path": "src/auth/login.ts",
-      "line": 25,
-      "type": "inline",
-      "severity": "Critical"
-    },
-    {
-      "id": "1002",
-      "author": "senior-dev",
-      "body": "This loop makes a database query per user (N+1 problem). Consider batching the queries.",
-      "path": "src/user/service.ts",
-      "line": 48,
-      "type": "inline",
-      "severity": "High"
-    },
-    {
-      "id": "1003",
-      "author": "code-reviewer",
-      "body": "Variable name `d` is not descriptive. Use `currentDate` or similar.",
-      "path": "src/utils/date.ts",
-      "line": 12,
-      "type": "inline",
-      "severity": "Low"
-    },
-    {
-      "id": "1004",
-      "author": "team-lead",
-      "body": "Great implementation! The error handling is comprehensive.",
-      "path": null,
-      "line": null,
-      "type": "general",
-      "severity": "Positive"
-    },
-    {
-      "id": "1005",
-      "author": "perf-bot",
-      "body": "Consider caching this result. It's computed on every request but rarely changes.",
-      "path": "src/config/loader.ts",
-      "line": 33,
-      "type": "inline",
-      "severity": "Medium"
-    },
-    {
-      "id": "1006",
-      "author": "security-bot",
-      "body": "API key is hardcoded. Move to environment variable.",
-      "path": "src/external/payment.ts",
-      "line": 8,
-      "type": "inline",
-      "severity": "Critical"
-    },
-    {
-      "id": "1007",
-      "author": "reviewer-2",
-      "body": "This function is 80 lines long. Consider breaking it into smaller functions.",
-      "path": "src/order/processor.ts",
-      "line": 15,
-      "type": "inline",
-      "severity": "Medium"
-    },
-    {
-      "id": "1008",
-      "author": "qa-engineer",
-      "body": "Add unit tests for the edge cases (empty input, null values).",
-      "path": "src/auth/login.ts",
-      "line": 20,
-      "type": "inline",
-      "severity": "Medium"
-    }
-  ]
-}
-```
-
-### Expected Analysis Output
-
-```json
-{
-  "analyses": [
-    {
-      "comment_id": "1001",
-      "file": "src/auth/login.ts",
-      "line": 25,
-      "issue_description": "SQL Injection Risk",
-      "exists": true,
-      "valid": true,
-      "severity": "Critical",
-      "auto_fixable": true,
-      "suggested_fix": "Use parameterized query with placeholders",
-      "confidence": "high",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1002",
-      "file": "src/user/service.ts",
-      "line": 48,
-      "issue_description": "N+1 Query Problem",
-      "exists": true,
-      "valid": true,
-      "severity": "High",
-      "auto_fixable": true,
-      "suggested_fix": "Use findMany with IN clause",
-      "confidence": "high",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1003",
-      "file": "src/utils/date.ts",
-      "line": 12,
-      "issue_description": "Unclear variable name",
-      "exists": true,
-      "valid": true,
-      "severity": "Low",
-      "auto_fixable": true,
-      "suggested_fix": "Rename to currentDate",
-      "confidence": "high",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1004",
-      "file": null,
-      "line": null,
-      "issue_description": "Positive feedback",
-      "exists": true,
-      "valid": true,
-      "severity": "Positive",
-      "auto_fixable": false,
-      "suggested_fix": null,
-      "confidence": "high",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1005",
-      "file": "src/config/loader.ts",
-      "line": 33,
-      "issue_description": "Missing cache",
-      "exists": true,
-      "valid": true,
-      "severity": "Medium",
-      "auto_fixable": true,
-      "suggested_fix": "Add Map-based caching with TTL",
-      "confidence": "medium",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1006",
-      "file": "src/external/payment.ts",
-      "line": 8,
-      "issue_description": "Hardcoded API key",
-      "exists": true,
-      "valid": true,
-      "severity": "Critical",
-      "auto_fixable": true,
-      "suggested_fix": "Use process.env.PAYMENT_API_KEY",
-      "confidence": "high",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "1007",
-      "file": "src/order/processor.ts",
-      "line": 15,
-      "issue_description": "Function too long",
-      "exists": true,
-      "valid": true,
-      "severity": "Medium",
-      "auto_fixable": false,
-      "suggested_fix": "Extract into smaller functions",
-      "confidence": "medium",
-      "needs_human_review": true,
-      "human_review_reason": "Requires understanding business logic to split correctly"
-    },
-    {
-      "comment_id": "1008",
-      "file": "src/auth/login.ts",
-      "line": 20,
-      "issue_description": "Missing unit tests",
-      "exists": true,
-      "valid": true,
-      "severity": "Medium",
-      "auto_fixable": false,
-      "suggested_fix": "Add test cases for edge cases",
-      "confidence": "high",
-      "needs_human_review": false
-    }
-  ]
+  "comments": {
+    "inline": [
+      {
+        "id": 1,
+        "body": "String interpolation in SQL query at line 42 allows injection — use parameterized queries instead",
+        "path": "src/auth.ts",
+        "line": 42,
+        "author": "security-reviewer-1",
+        "severity": "Critical"
+      },
+      {
+        "id": 2,
+        "body": "This function is 85 lines long. Consider extracting the JWT validation logic into a separate function",
+        "path": "src/auth.ts",
+        "line": 15,
+        "author": "quality-reviewer-1",
+        "severity": "Medium"
+      },
+      {
+        "id": 3,
+        "body": "N+1 query: fetching each role separately inside a loop. Use a JOIN or batch query",
+        "path": "src/roles.ts",
+        "line": 88,
+        "author": "perf-reviewer-1",
+        "severity": "High"
+      },
+      {
+        "id": 4,
+        "body": "Mix of tabs and spaces for indentation on lines 50-60",
+        "path": "src/auth.ts",
+        "line": 50,
+        "author": "quality-reviewer-1",
+        "severity": "Low"
+      },
+      {
+        "id": 5,
+        "body": "Hardcoded API key in source — should be moved to environment variable",
+        "path": "src/config.ts",
+        "line": 8,
+        "author": "security-reviewer-1",
+        "severity": "Critical"
+      },
+      {
+        "id": 6,
+        "body": "No error handling around catch block — unhandled promise rejections may cause crashes",
+        "path": "src/service.ts",
+        "line": 32,
+        "author": "security-reviewer-1",
+        "severity": "High"
+      }
+    ],
+    "reviews": [
+      {
+        "id": 101,
+        "body": "Overall the approach looks good. A few security concerns that need addressing before merge.",
+        "state": "CHANGES_REQUESTED",
+        "author": "lead-reviewer"
+      }
+    ],
+    "general": [
+      {
+        "id": 201,
+        "body": "Great start! I left some inline comments. The main concern is the SQL injection in auth.ts — that's a blocker.",
+        "author": "lead-reviewer"
+      }
+    ]
+  },
+  "counts": {"inline": 6, "reviews": 1, "general": 1}
 }
 ```
 
 ---
 
-## Test Case 2: False Positive Detection
+## Test Case 2: Overlap + Supersede Scenario
 
-**PR URL:** `https://github.com/example/web-app/pull/15`
-
-### Mock Comments
+These comments exhibit OVERLAP and SUPERSEDE relationships that Stage 5 should detect.
 
 ```json
 {
-  "comments": [
-    {
-      "id": "2001",
-      "author": "reviewer",
-      "body": "This should use useEffect instead of useState.",
-      "path": "src/components/UserList.tsx",
-      "line": 25,
-      "type": "inline"
-    },
-    {
-      "id": "2002",
-      "author": "reviewer",
-      "body": "Missing error handling here.",
-      "path": "src/api/fetch.ts",
-      "line": 10,
-      "type": "inline"
-    }
-  ]
+  "status": "ok",
+  "owner": "test",
+  "repo": "demo",
+  "number": 7,
+  "comments": {
+    "inline": [
+      {
+        "id": 10,
+        "body": "Add input validation for userId before database query",
+        "path": "src/users.ts",
+        "line": 40,
+        "author": "reviewer-a",
+        "severity": "Medium"
+      },
+      {
+        "id": 11,
+        "body": "SQL injection: userId is concatenated directly into query string",
+        "path": "src/users.ts",
+        "line": 41,
+        "author": "reviewer-b",
+        "severity": "Critical"
+      },
+      {
+        "id": 12,
+        "body": "N+1 query in user list endpoint — loading roles in a loop",
+        "path": "src/users.ts",
+        "line": 55,
+        "author": "reviewer-a",
+        "severity": "High"
+      }
+    ]
+  }
 }
 ```
 
-### Expected Analysis (False Positives)
-
-```json
-{
-  "analyses": [
-    {
-      "comment_id": "2001",
-      "exists": false,
-      "valid": false,
-      "reason": "Comment is based on outdated code. The current code already uses useEffect correctly.",
-      "needs_human_review": false
-    },
-    {
-      "comment_id": "2002",
-      "exists": false,
-      "valid": false,
-      "reason": "Error handling is done in the caller function. This is intentional separation.",
-      "needs_human_review": true,
-      "human_review_reason": "Explain the error handling architecture"
-    }
-  ]
-}
-```
+**Expected Stage 5 analysis:**
+- `id:10` and `id:11` → OVERLAP (same file, adjacent lines, SQL-related issues)
+- `id:12` → SAME_ROOT with 10+11 (all three stem from raw SQL in handlers vs a shared query layer)
+- Clustering: all 3 into cluster_1: "Extract query builder layer"
+- Supersedes: fixing 10+11 (parameterized queries via query builder) partially supersedes 12 (N+1 is a different issue but same architectural fix)
 
 ---
 
-## Test Case 3: Conflicting Comments
+## Test Case 3: Conflict Scenario
 
 ```json
 {
-  "comments": [
-    {
-      "id": "3001",
-      "author": "dev-a",
-      "body": "Use async/await here for better readability.",
-      "path": "src/service.ts",
-      "line": 30,
-      "type": "inline"
-    },
-    {
-      "id": "3002",
-      "author": "dev-b",
-      "body": "Keep using .then() chains, async/await changes the execution flow.",
-      "path": "src/service.ts",
-      "line": 30,
-      "type": "inline"
-    }
-  ]
+  "status": "ok",
+  "owner": "test",
+  "repo": "webapp",
+  "number": 14,
+  "comments": {
+    "inline": [
+      {
+        "id": 20,
+        "body": "Use a global error boundary middleware instead of try/catch in every handler",
+        "path": "src/routes/index.ts",
+        "line": 5,
+        "author": "reviewer-x",
+        "severity": "Medium"
+      },
+      {
+        "id": 21,
+        "body": "Keep error handling inline — global middleware adds indirection for simple handlers",
+        "path": "src/routes/index.ts",
+        "line": 5,
+        "author": "reviewer-y",
+        "severity": "Low"
+      }
+    ]
+  }
 }
 ```
 
-### Expected Analysis
-
-```json
-{
-  "conflict_detected": true,
-  "conflicting_comments": ["3001", "3002"],
-  "conflict_reason": "Contradictory suggestions for the same code location",
-  "recommendation": "needs_human_review",
-  "human_review_reason": "Both approaches are valid. Team should decide on standard."
-}
-```
+**Expected Stage 5 analysis:**
+- `id:20` and `id:21` → CONFLICT (mutually exclusive approaches)
+- `nature`: "architectural_choice"
+- Must present both options to user. Do not auto-resolve.
 
 ---
 
-## Version
+## Test Case 4: All Independent Comments
 
-- v1.0.0 - Initial test data
+```json
+{
+  "status": "ok",
+  "owner": "test",
+  "repo": "utils",
+  "number": 3,
+  "comments": {
+    "inline": [
+      {
+        "id": 30,
+        "body": "Use const instead of let for immutable variable",
+        "path": "src/format.ts",
+        "line": 12,
+        "author": "reviewer-z",
+        "severity": "Low"
+      },
+      {
+        "id": 31,
+        "body": "Add unit test for date formatting edge case (feb 29)",
+        "path": "tests/format.test.ts",
+        "line": 0,
+        "author": "reviewer-z",
+        "severity": "Medium"
+      },
+      {
+        "id": 32,
+        "body": "Update README to document the new formatDate parameter",
+        "path": "README.md",
+        "line": 0,
+        "author": "reviewer-z",
+        "severity": "Low"
+      }
+    ]
+  }
+}
+```
+
+**Expected Stage 5 analysis:** No edges. All independent. Resolution order: [30, 31, 32] (any order).

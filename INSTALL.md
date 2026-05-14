@@ -1,90 +1,11 @@
-# PR Comment Fix Skill - Installation Guide
+# PR Comment Fix Skill — Installation Guide
 
 ## Quick Install
 
-### Automatic (Recommended)
-
 ```bash
-# Clone the repository
 git clone https://github.com/mtsocom2000/my-review-resolver.git
-cd my-review-resolver/skills/pr-comment-fix
-
-# Run auto-detect installer
+cd my-review-resolver
 ./install.sh --auto
-
-# Or install to all platforms
-./install.sh --all
-```
-
-### Manual
-
-**Claude Code:**
-```bash
-cp -r pr-comment-fix ~/.claude/skills/
-```
-
-**Cursor:**
-```bash
-cp -r pr-comment-fix ~/.cursor/skills/
-```
-
-**VSCode Copilot:**
-```bash
-cp -r pr-comment-fix ~/.vscode/copilot/skills/
-```
-
-**OpenCode:**
-```bash
-cp -r pr-comment-fix ~/.opencode/skills/
-```
-
-**Local Project:**
-```bash
-cp -r pr-comment-fix ./.claude/skills/
-```
-
----
-
-## Platform-Specific Instructions
-
-### Claude Code
-
-After installation:
-
-```bash
-# Load the skill
-/skill load pr-comment-fix
-
-# Or use directly
-Help me fix PR comments on https://github.com/owner/repo/pull/1
-```
-
-### Cursor
-
-1. Open Cursor Settings
-2. Go to "Skills" or "Plugins"
-3. Click "Add Skill"
-4. Select the `pr-comment-fix` folder
-
-Usage:
-```
-@pr-comment-fix Fix comments on https://github.com/owner/repo/pull/1
-```
-
-### VSCode (GitHub Copilot)
-
-1. Open VSCode
-2. Open Copilot Chat
-3. Type `@pr-comment-fix` to use
-
-### OpenCode
-
-```bash
-# Load skill
-/skill load pr-comment-fix
-
-# Or use command
-/fix-pr https://github.com/owner/repo/pull/1
 ```
 
 ---
@@ -92,65 +13,64 @@ Usage:
 ## Requirements
 
 ### Required
-- Git (for branch operations)
+- `bash` 4+
+- `jq` (for JSON processing in scripts)
+- Git
 
-### Optional
-- GitHub CLI (`gh`) - For GitHub API access
-- GitLab CLI (`glab`) - For GitLab API access
+### Required for primary mode
+- `gh` CLI (authenticated) — for fetching comments and posting replies
+  - Install: `brew install gh` / `sudo apt install gh` / https://cli.github.com/
+  - Authenticate: `gh auth login`
 
-### Check Requirements
+### Optional fallback
+- MCP tools (GitHub MCP server) — used when `gh` CLI is not available
+  - Configure your AI agent's MCP settings to include a GitHub MCP server
 
-```bash
-# Check if gh is installed
-gh --version
-
-# If not installed:
-# macOS
-brew install gh
-
-# Linux
-sudo apt install gh
-
-# Or download from https://cli.github.com/
-```
+### Optional enhancement
+- ECC (Everything Claude Code) — enables specialized parallel review agents
+  - Install: `git clone https://github.com/affaan-m/everything-claude-code.git && cd everything-claude-code && npm install && ./install.sh --profile minimal`
 
 ---
 
-## Configuration
+## Manual Install (per platform)
 
-### GitHub Token (Optional)
-
-For better API access, set environment variable:
+### Claude Code
 
 ```bash
-export GITHUB_TOKEN=ghp_your_token_here
+# Project-level (recommended)
+mkdir -p .claude/skills/pr-comment-fix
+cp SKILL.md lib/ecc-detector.ts .claude/skills/pr-comment-fix/
+cp -r agents scripts references tests .claude/skills/pr-comment-fix/
+
+# Or user-level
+mkdir -p ~/.claude/skills/pr-comment-fix
+cp -r * ~/.claude/skills/pr-comment-fix/
 ```
 
-Or add to `~/.config/pr-comment-fix/config`:
+### VS Code Copilot
 
 ```bash
-GITHUB_TOKEN=ghp_your_token_here
+# Project-level
+mkdir -p .github/skills/pr-comment-fix
+cp -r * .github/skills/pr-comment-fix/
+
+# Or user-level
+mkdir -p ~/.copilot/skills/pr-comment-fix
+cp -r * ~/.copilot/skills/pr-comment-fix/
 ```
 
-### GitLab Token (Optional)
+### Cursor
 
 ```bash
-export GITLAB_TOKEN=glpat_your_token_here
+mkdir -p ~/.cursor/skills/pr-comment-fix
+cp -r * ~/.cursor/skills/pr-comment-fix/
 ```
 
----
-
-## Uninstall
+### OpenCode
 
 ```bash
-# Run uninstaller
-./install.sh --uninstall
-
-# Or manually remove
-rm -rf ~/.claude/skills/pr-comment-fix
-rm -rf ~/.cursor/skills/pr-comment-fix
-rm -rf ~/.vscode/copilot/skills/pr-comment-fix
-rm -rf ~/.opencode/skills/pr-comment-fix
+mkdir -p ~/.opencode/skills/pr-comment-fix
+cp -r * ~/.opencode/skills/pr-comment-fix/
 ```
 
 ---
@@ -158,59 +78,44 @@ rm -rf ~/.opencode/skills/pr-comment-fix
 ## Verify Installation
 
 ```bash
-# Test with dryrun
-./scripts/dryrun.sh
+# Check all scripts are executable
+ls -la scripts/*.sh
 
-# Should output:
-# ✓ All tests passed!
+# Test with dryrun
+DRY_RUN=true bash scripts/check-branch.sh https://github.com/example/repo/pull/1
+# Expected: JSON output, no actual git operations
+
+# Check ECC detector (optional)
+npx tsx lib/ecc-detector.ts
 ```
 
 ---
 
-## Troubleshooting
+## After Install
 
-### Skill not loading
+The skill auto-triggers when you provide a PR URL. To test:
+- In Claude Code: paste `https://github.com/owner/repo/pull/42`
+- In VS Code Copilot: type `/pr-comment-fix https://github.com/owner/repo/pull/42`
 
-1. Check file permissions:
-   ```bash
-   chmod +x install.sh scripts/*.sh
-   ```
+---
 
-2. Verify SKILL.md exists:
-   ```bash
-   ls -la ~/.claude/skills/pr-comment-fix/SKILL.md
-   ```
+## Uninstall
 
-3. Restart your IDE/terminal
-
-### API rate limits
-
-If you hit GitHub API rate limits:
-- Authenticate with `gh auth login`
-- Or set `GITHUB_TOKEN` environment variable
-
-### Branch sync issues
-
-If branch sync fails:
 ```bash
-# Manually sync
-cd your-project
-git fetch origin
-git checkout your-branch
-git pull origin your-branch
+# Remove from all platforms
+./install.sh --uninstall
+
+# Or manually
+rm -rf ~/.claude/skills/pr-comment-fix
+rm -rf ~/.github/skills/pr-comment-fix
+rm -rf ~/.copilot/skills/pr-comment-fix
+rm -rf ~/.cursor/skills/pr-comment-fix
 ```
 
 ---
 
 ## Version
 
-Current: **2.1.0**
+Current: **2.3.0**
 
-See [SKILL.md](SKILL.md) for version history.
-
----
-
-## Support
-
-- **Issues:** https://github.com/mtsocom2000/my-review-resolver/issues
-- **Discussions:** https://github.com/mtsocom2000/my-review-resolver/discussions
+See [README.md](README.md) for changelog.

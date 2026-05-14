@@ -1,94 +1,94 @@
 # PR Comment Patterns
 
-## 常见评论类型及处理方式
+## Common Comment Types and Response Strategies
 
 ---
 
-## 1. 安全类评论
+## 1. Security Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：security, inject, validate, sanitize, auth, token, secret, credential
-```
-
-### 示例
-```
-⚠️ This user input should be validated before use.
-🔒 Consider using parameterized query to prevent SQL injection.
-🔑 Don't hardcode API keys, use environment variables.
+Keywords: security, injection, validate, sanitize, auth, token, secret, credential, xss, csrf
 ```
 
-### 处理策略
-- **优先级:** High 或 Critical
-- **自动修复:** 是（有明确模式）
-- **验证:** 必须通过安全扫描
+### Examples
+```
+This user input should be validated before use.
+Consider using parameterized query to prevent SQL injection.
+Don't hardcode API keys, use environment variables.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** High or Critical
+- **Auto-fix:** Yes (well-defined patterns)
+- **Verification:** Must pass security scan
 
-**输入验证:**
+### Fix Templates
+
+**Input validation:**
 ```typescript
-// ❌ Before
+// Before
 const userId = req.query.id;
 
-// ✅ After
+// After
 import { z } from 'zod';
 const userId = z.string().uuid().parse(req.query.id);
 ```
 
-**参数化查询:**
+**Parameterized queries:**
 ```typescript
-// ❌ Before
+// Before
 const query = `SELECT * FROM users WHERE id = ${userId}`;
 
-// ✅ After
+// After
 const query = 'SELECT * FROM users WHERE id = $1';
 await db.query(query, [userId]);
 ```
 
 ---
 
-## 2. 性能类评论
+## 2. Performance Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：performance, slow, n+1, query, cache, memory, optimize, efficient
-```
-
-### 示例
-```
-⚡ This loop makes a database query per iteration (N+1 problem).
-⚡ Consider caching this expensive computation.
-⚡ This could cause memory issues with large datasets.
+Keywords: performance, slow, n+1, query, cache, memory, optimize, efficient, bottleneck
 ```
 
-### 处理策略
-- **优先级:** Medium 或 High
-- **自动修复:** 部分（需了解数据量）
-- **验证:** 性能测试或代码审查
+### Examples
+```
+This loop makes a database query per iteration (N+1 problem).
+Consider caching this expensive computation.
+This could cause memory issues with large datasets.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** Medium or High
+- **Auto-fix:** Partial (requires data volume context)
+- **Verification:** Performance test or code review
 
-**N+1 查询:**
+### Fix Templates
+
+**N+1 Queries:**
 ```typescript
-// ❌ Before
+// Before
 for (const userId of userIds) {
   const user = await db.user.find({ where: { id: userId } });
 }
 
-// ✅ After
+// After
 const users = await db.user.findMany({
   where: { id: { in: userIds } }
 });
 ```
 
-**添加缓存:**
+**Add caching:**
 ```typescript
-// ❌ Before
+// Before
 async function getData(id: string) {
   return expensiveOperation(id);
 }
 
-// ✅ After
+// After
 const cache = new Map<string, any>();
 async function getData(id: string) {
   if (cache.has(id)) return cache.get(id);
@@ -100,39 +100,36 @@ async function getData(id: string) {
 
 ---
 
-## 3. 代码质量类评论
+## 3. Code Quality Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：refactor, duplicate, complex, clean, simplify, extract, abstract
-```
-
-### 示例
-```
-📝 This logic is duplicated in 3 places.
-📝 This function is too long, consider breaking it down.
-📝 Could use a more descriptive variable name.
+Keywords: refactor, duplicate, complex, clean, simplify, extract, abstract, magic number
 ```
 
-### 处理策略
-- **优先级:** Medium
-- **自动修复:** 部分
-- **验证:** 代码审查
+### Examples
+```
+This logic is duplicated in 3 places.
+This function is too long, consider breaking it down.
+Could use a more descriptive variable name.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** Medium
+- **Auto-fix:** Partial
+- **Verification:** Code review
 
-**提取函数:**
+### Fix Templates
+
+**Extract function:**
 ```typescript
-// ❌ Before
+// Before
 function processOrder(order: Order) {
-  // 50 lines of code doing multiple things
-  // validate...
-  // calculate...
-  // save...
-  // notify...
+  // 50 lines doing multiple things:
+  // validate, calculate, save, notify...
 }
 
-// ✅ After
+// After
 function processOrder(order: Order) {
   validateOrder(order);
   const total = calculateTotal(order);
@@ -141,9 +138,9 @@ function processOrder(order: Order) {
 }
 ```
 
-**消除重复:**
+**Eliminate duplication:**
 ```typescript
-// ❌ Before
+// Before
 function getActiveUsers() {
   return users.filter(u => u.status === 'active').map(u => u.name);
 }
@@ -151,7 +148,7 @@ function getActivePosts() {
   return posts.filter(p => p.status === 'active').map(p => p.title);
 }
 
-// ✅ After
+// After
 function getActiveItems<T>(items: T[], statusField: string, nameField: string) {
   return items
     .filter(i => i[statusField] === 'active')
@@ -161,35 +158,35 @@ function getActiveItems<T>(items: T[], statusField: string, nameField: string) {
 
 ---
 
-## 4. 风格类评论
+## 4. Style Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：naming, style, convention, format, lint, consistent, pattern
-```
-
-### 示例
-```
-🎨 Variable name could be more descriptive.
-🎨 This doesn't follow our naming convention.
-🎨 Consider using camelCase here.
+Keywords: naming, style, convention, format, lint, consistent, pattern, camelCase
 ```
 
-### 处理策略
-- **优先级:** Low
-- **自动修复:** 是
-- **验证:** Lint 检查
+### Examples
+```
+Variable name could be more descriptive.
+This doesn't follow our naming convention.
+Consider using camelCase here.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** Low
+- **Auto-fix:** Yes
+- **Verification:** Lint check
 
-**命名改进:**
+### Fix Templates
+
+**Naming improvements:**
 ```typescript
-// ❌ Before
+// Before
 const d = new Date();
 const arr = [];
 function proc(data) { }
 
-// ✅ After
+// After
 const currentDate = new Date();
 const activeUsers = [];
 function processUserData(userData: UserData) { }
@@ -197,30 +194,29 @@ function processUserData(userData: UserData) { }
 
 ---
 
-## 5. 测试类评论
+## 5. Test Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：test, coverage, edge case, assert, mock, unit test
-```
-
-### 示例
-```
-✅ Add a test for this edge case.
-✅ This should have unit tests.
-✅ Consider adding integration tests.
+Keywords: test, coverage, edge case, assert, mock, unit test, integration test
 ```
 
-### 处理策略
-- **优先级:** Medium
-- **自动修复:** 部分
-- **验证:** 运行测试
+### Examples
+```
+Add a test for this edge case.
+This should have unit tests.
+Consider adding integration tests.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** Medium
+- **Auto-fix:** Partial
+- **Verification:** Run tests
 
-**添加测试:**
+### Fix Templates
+
+**Add tests:**
 ```typescript
-// ✅ Add test file
 describe('calculateDiscount', () => {
   it('should return 0 for new users', () => {
     expect(calculateDiscount({ level: 0 })).toBe(0);
@@ -238,33 +234,33 @@ describe('calculateDiscount', () => {
 
 ---
 
-## 6. 文档类评论
+## 6. Documentation Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：document, comment, jsdoc, readme, explain, clarify
-```
-
-### 示例
-```
-📖 Add JSDoc for this function.
-📖 This complex logic needs a comment.
-📖 Update the README with usage examples.
+Keywords: document, comment, jsdoc, readme, explain, clarify, documentation
 ```
 
-### 处理策略
-- **优先级:** Low
-- **自动修复:** 是
-- **验证:** 文档审查
+### Examples
+```
+Add JSDoc for this function.
+This complex logic needs a comment.
+Update the README with usage examples.
+```
 
-### 修复模板
+### Strategy
+- **Priority:** Low
+- **Auto-fix:** Yes
+- **Verification:** Documentation review
 
-**添加 JSDoc:**
+### Fix Templates
+
+**Add JSDoc:**
 ```typescript
-// ✅ Before
+// Before
 function calculate(a, b) { return a + b; }
 
-// ✅ After
+// After
 /**
  * Calculates the sum of two numbers
  * @param a - First number
@@ -278,65 +274,65 @@ function calculate(a: number, b: number): number {
 
 ---
 
-## 7. 架构类评论
+## 7. Architecture Comments
 
-### 模式识别
+### Pattern Recognition
 ```
-关键词：architecture, design, pattern, structure, module, layer, separation
-```
-
-### 示例
-```
-🏗️ This should be in a separate service.
-🏗️ Consider using the repository pattern.
-🏗️ This breaks the separation of concerns.
+Keywords: architecture, design, pattern, structure, module, layer, separation of concerns
 ```
 
-### 处理策略
-- **优先级:** High
-- **自动修复:** 否（需人工决策）
-- **验证:** 架构审查
+### Examples
+```
+This should be in a separate service.
+Consider using the repository pattern.
+This breaks the separation of concerns.
+```
 
-### 处理建议
-- 标记为需要人工确认
-- 提供多个可行方案
-- 说明各方案的权衡
+### Strategy
+- **Priority:** High
+- **Auto-fix:** No (requires human decision)
+- **Verification:** Architecture review
+
+### Handling
+- Mark as needs-human-confirmation
+- Provide multiple viable approaches with trade-offs
+- Each approach should state which comments it resolves
 
 ---
 
 ## Comment Severity Classification
 
-| 级别 | 标识 | 响应时间 | 示例 |
-|------|------|----------|------|
-| **Critical** | 🔴 | 立即 | 安全漏洞、数据损坏 |
-| **High** | 🟠 | 24h | 功能错误、严重 bug |
-| **Medium** | 🟡 | 本周 | 代码质量、性能优化 |
-| **Low** | 🟢 | 有空时 | 风格、命名、文档 |
+| Level | Label | Response Time | Examples |
+|-------|-------|---------------|----------|
+| **Critical** | 🔴 | Immediate | Security vulnerability, data corruption |
+| **High** | 🟠 | 24h | Functional bug, significant defect |
+| **Medium** | 🟡 | This sprint | Code quality, performance optimization |
+| **Low** | 🟢 | When possible | Style, naming, documentation |
 
 ---
 
 ## Response Templates
 
-### 接受建议
+### Accept suggestion
 ```
 Thanks for the feedback! I've addressed this in commit {sha}.
 ```
 
-### 部分接受
+### Partially accept
 ```
 Good point! I've implemented a partial fix in {sha}. 
-For the remaining issue, I think {alternative} might be better because {reason}.
+For the remaining issue, I think {alternative} would be better because {reason}.
 ```
 
-### 礼貌拒绝
+### Politely decline
 ```
-I appreciate the suggestion! However, I'm going to keep it as-is because {reason}.
-This aligns with our team's decision in {reference}.
+I appreciate the suggestion — staying with the current approach because {reason}.
+This aligns with {reference}.
 ```
 
-### 需要澄清
+### Needs clarification
 ```
-Could you clarify what you mean by {specific}? I want to make sure I understand correctly.
+Could you clarify what you mean by {specific}? I want to make sure I address the right concern.
 ```
 
 ---

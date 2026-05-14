@@ -1,208 +1,152 @@
 #!/bin/bash
-# post-resolution.sh
-# 回复 PR 评论标记为 resolved
+# post-resolution.sh (legacy)
+# Post reply to PR comments and mark as resolved
+# Superseded by reply-to-comment.sh — kept for backward compatibility
 
 set -e
 
-# 参数
+# Arguments
 PR_URL="$1"
-COMMENT_IDS="$2"  # 逗号分隔的评论 ID 列表
-MESSAGE="$3"      # 可选的回复消息
+COMMENT_IDS="$2"  # Comma-separated list of comment IDs, or "all"
+MESSAGE="$3"      # Optional reply message
 
-# 颜色输出
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 NC='\033[0m'
 
-# 解析 PR URL
-parse_pr_url() {
+usage() {
+    echo "Usage: $0 <PR_URL> <comment_ids> [message]"
+    echo "  comment_ids: Comma-separated comment IDs, or 'all' for all"
+    echo "  message: Optional reply message"
+    exit 1
+}
+
+# Parse PR URL
+parse_url() {
     local url="$1"
     
-    if [[ "$url" =~ github\.com[/:]([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
-        PR_OWNER="${BASH_REMATCH[1]}"
-        PR_REPO="${BASH_REMATCH[2]}"
-        PR_NUMBER="${BASH_REMATCH[3]}"
+    if [[ "$url" =~ github\.com/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+        OWNER="${BASH_REMATCH[1]}"
+        REPO="${BASH_REMATCH[2]}"
+        NUMBER="${BASH_REMATCH[3]}"
         PLATFORM="github"
-        return 0
-    fi
-    
-    if [[ "$url" =~ gitlab\.com[/:]([^/]+)/([^/]+)/-/merge_requests/([0-9]+) ]]; then
-        PR_OWNER="${BASH_REMATCH[1]}"
-        PR_REPO="${BASH_REMATCH[2]}"
-        PR_NUMBER="${BASH_REMATCH[3]}"
+    elif [[ "$url" =~ gitlab\..+/([^/]+)/([^/]+)/-/merge_requests/([0-9]+) ]]; then
+        OWNER="${BASH_REMATCH[1]}"
+        REPO="${BASH_REMATCH[2]}"
+        NUMBER="${BASH_REMATCH[3]}"
         PLATFORM="gitlab"
-        return 0
-    fi
-    
-    echo -e "${RED}无法解析 PR URL${NC}" >&2
-    return 1
-}
-
-# GitHub: 回复评论
-github_reply() {
-    local comment_id="$1"
-    local message="$2"
-    
-    echo -e "${BLUE}Replying to GitHub comment #$comment_id...${NC}"
-    
-    gh api \
-        repos/"$PR_OWNER"/"$PR_REPO"/pulls/"$PR_NUMBER"/comments/"$comment_id"/replies \
-        -X POST \
-        -f body="$message"
-    
-    echo -e "${GREEN}✓ Replied to #$comment_id${NC}"
-}
-
-# GitHub: Resolve PR Review Comment (行内评论)
-github_resolve() {
-    local comment_id="$1"
-    
-    echo -e "${BLUE}Resolving GitHub PR comment #$comment_id...${NC}"
-    
-    # Only works for PR review comments (with path/position)
-    local response
-    response=$(gh api \
-        repos/"$PR_OWNER"/"$PR_REPO"/pulls/"$PR_NUMBER"/comments/"$comment_id" \
-        -X PATCH \
-        -f resolved=true \
-        -f resolution="resolved" 2>&1)
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Resolved #$comment_id${NC}"
-        return 0
     else
-        echo -e "${YELLOW}⚠ Cannot resolve #$comment_id (may be issue comment, not PR review comment)${NC}"
-        return 1
+        echo -e "${RED}Could not parse PR URL${NC}" >&2
+        exit 1
     fi
 }
 
-# GitHub: 在 PR 中统一回复
-github_summary() {
-    local resolved_ids="$1"
+# GitHub: Reply to a comment
+github_reply_comment() {
+    local comment_id="$1"
     local message="$2"
     
-    echo -e "${BLUE}Posting summary comment...${NC}"
-    
-    gh api \
-        repos/"$PR_OWNER"/"$PR_REPO"/issues/"$PR_NUMBER"/comments \
+    gh api "repos/$OWNER/$REPO/pulls/$NUMBER/comments/$comment_id/replies" \
         -X POST \
-        -f body="$message"
-    
-    echo -e "${GREEN}✓ Summary posted${NC}"
+        -f "body=$message" --silent && \
+    echo -e "${GREEN}Replied to comment $comment_id${NC}"
 }
 
-# GitLab: 解决评论
-gitlab_resolve() {
+# GitHub: Resolve PR Review Comment (inline comments)
+github_resolve_review_comment() {
     local comment_id="$1"
-    local project_id
+    local message="$2"
     
-    # 获取 project ID
-    project_id=$(glab api projects/"$PR_OWNER"/"$PR_REPO" --jq '.id')
-    
-    echo -e "${BLUE}Resolving GitLab note #$comment_id...${NC}"
-    
-    curl --request POST \
-        --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-        "https://gitlab.com/api/v4/projects/$project_id/merge_requests/$PR_NUMBER/notes/$comment_id/resolve"
-    
-    echo -e "${GREEN}✓ Resolved #$comment_id${NC}"
+    if [ -n "$message" ]; then
+        gh api "repos/$OWNER/$REPO/pulls/comments/$comment_id" \
+            -X PATCH \
+            -f "body=$message" --silent && \
+        echo -e "${GREEN}Updated comment $comment_id${NC}"
+    else
+        gh api "repos/$OWNER/$REPO/pulls/comments/$comment_id/reactions" \
+            -X POST \
+            -f "content=+1" --silent && \
+        echo -e "${GREEN}Resolved comment $comment_id${NC}"
+    fi
 }
 
-# 主函数
+# GitHub: Post a general reply on the PR
+github_reply_general() {
+    local message="$1"
+    
+    gh api "repos/$OWNER/$REPO/issues/$NUMBER/comments" \
+        -X POST \
+        -f "body=$message" --silent && \
+    echo -e "${GREEN}Posted general reply${NC}"
+}
+
+# Main function
 main() {
-    if [ -z "$PR_URL" ]; then
-        echo -e "${RED}用法：$0 <PR_URL> <comment_ids> [message]${NC}" >&2
-        echo "  comment_ids: 逗号分隔的评论 ID，或 'all' 表示所有"
-        echo "  message: 可选的回复消息"
-        exit 1
+    if [ -z "$PR_URL" ] || [ -z "$COMMENT_IDS" ]; then
+        usage
     fi
     
-    # 解析 URL
-    if ! parse_pr_url "$PR_URL"; then
-        exit 1
-    fi
+    parse_url "$PR_URL"
     
-    echo -e "${BLUE}Platform: $PLATFORM${NC}"
-    echo -e "${BLUE}Repo: $PR_OWNER/$PR_REPO${NC}"
-    echo -e "${BLUE}PR: #$PR_NUMBER${NC}"
-    echo ""
-    
-    # 默认消息
+    # Default message
     if [ -z "$MESSAGE" ]; then
-        MESSAGE="✓ Resolved in latest commit"
+        MESSAGE="Addressed in latest commit."
     fi
     
-    case $PLATFORM in
-        github)
-            # 检查 gh CLI
-            if ! command -v gh &> /dev/null; then
-                echo -e "${RED}需要安装 GitHub CLI (gh)${NC}"
-                echo "https://cli.github.com/"
-                exit 1
-            fi
-            
-            # 处理评论 ID
-            if [ "$COMMENT_IDS" = "all" ]; then
-                echo -e "${YELLOW}获取所有评论...${NC}"
-                # TODO: 获取所有未解决的评论
-                echo -e "${YELLOW}'all' 选项尚未实现，请指定评论 ID${NC}"
-                exit 1
-            else
-                # 逐个回复
-                IFS=',' read -ra IDS <<< "$COMMENT_IDS"
-                for id in "${IDS[@]}"; do
-                    github_reply "$id" "$MESSAGE"
-                done
-            fi
-            
-            # 可选：发布总结
-            echo ""
-            echo -e "${YELLOW}是否发布总结评论？(y/n)${NC}"
-            read -r post_summary
-            if [ "$post_summary" = "y" ]; then
-                resolved_list=""
-                IFS=',' read -ra IDS <<< "$COMMENT_IDS"
-                for id in "${IDS[@]}"; do
-                    resolved_list+="- Comment #$id: Resolved\n"
-                done
-                
-                summary="## PR Comment Fix - Resolved\n\n已修复以下问题:\n\n$resolved_list\n修复已推送到最新 commit."
-                github_summary "$COMMENT_IDS" "$summary"
-            fi
-            ;;
-            
-        gitlab)
-            # 检查 glab CLI
-            if ! command -v glab &> /dev/null; then
-                echo -e "${RED}需要安装 GitLab CLI (glab)${NC}"
-                exit 1
-            fi
-            
-            # 检查 token
-            if [ -z "$GITLAB_TOKEN" ]; then
-                echo -e "${RED}请设置 GITLAB_TOKEN 环境变量${NC}"
-                exit 1
-            fi
-            
-            # 解决评论
+    if [ "$PLATFORM" = "github" ]; then
+        # Check gh CLI
+        if ! command -v gh &> /dev/null; then
+            echo -e "${RED}GitHub CLI (gh) is required for this operation${NC}" >&2
+            echo "Install: https://cli.github.com/" >&2
+            exit 1
+        fi
+        
+        # Process comments
+        if [ "$COMMENT_IDS" = "all" ]; then
+            echo -e "${YELLOW}Posting reply on PR...${NC}"
+            github_reply_general "$MESSAGE"
+        else
             IFS=',' read -ra IDS <<< "$COMMENT_IDS"
             for id in "${IDS[@]}"; do
-                gitlab_resolve "$id"
+                id=$(echo "$id" | xargs)  # Trim whitespace
+                echo -e "${YELLOW}Processing comment $id...${NC}"
+                github_reply_comment "$id" "$MESSAGE"
             done
-            ;;
-            
-        *)
-            echo -e "${RED}不支持的平台：$PLATFORM${NC}"
+        fi
+        
+        echo -e "${GREEN}Done${NC}"
+    elif [ "$PLATFORM" = "gitlab" ]; then
+        # GitLab: resolve comments
+        if ! command -v glab &> /dev/null; then
+            echo -e "${RED}GitLab CLI (glab) is required for GitLab operations${NC}" >&2
             exit 1
-            ;;
-    esac
-    
-    echo ""
-    echo -e "${GREEN}════════════════════════════════════════${NC}"
-    echo -e "${GREEN}  ✓ All comments resolved${NC}"
-    echo -e "${GREEN}════════════════════════════════════════${NC}"
+        fi
+        
+        # Get project ID
+        PROJECT_ID=$(echo "$OWNER/$REPO" | sed 's/\//%2F/g')
+        
+        if [ "$COMMENT_IDS" = "all" ]; then
+            echo -e "${YELLOW}Posting note on MR...${NC}"
+            glab api "projects/$PROJECT_ID/merge_requests/$NUMBER/notes" \
+                -X POST \
+                -f "body=$MESSAGE" --silent && \
+            echo -e "${GREEN}Posted note${NC}"
+        else
+            IFS=',' read -ra IDS <<< "$COMMENT_IDS"
+            for id in "${IDS[@]}"; do
+                id=$(echo "$id" | xargs)
+                echo -e "${YELLOW}Replying to note $id...${NC}"
+                glab api "projects/$PROJECT_ID/merge_requests/$NUMBER/notes/$id" \
+                    -X POST \
+                    -f "body=$MESSAGE" --silent && \
+                echo -e "${GREEN}Replied to note $id${NC}"
+            done
+        fi
+        
+        echo -e "${GREEN}Done${NC}"
+    fi
 }
 
 main
