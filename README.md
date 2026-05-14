@@ -75,10 +75,8 @@ A Claude Code skill (and compatible with VS Code Copilot, Cursor, OpenCode) that
 
 | File | Purpose |
 |------|---------|
-| `lib/ecc-detector.ts` | ECC installation detection (TypeScript, run via tsx) |
 | `references/github-api.md` | GitHub API reference for gh CLI commands |
 | `references/comment-patterns.md` | Common PR comment types and response strategies |
-| `ECC_INTEGRATION.md` | Guide for integrating with Everything Claude Code |
 | `COMPATIBILITY.md` | Platform compatibility matrix |
 | `.claude-plugin/marketplace.json` | Claude Code marketplace manifest |
 
@@ -104,8 +102,6 @@ Requires: `gh` CLI (authenticated), `jq`, `bash 4+`.
 
 1. **In Claude Code:** Provide any GitHub/GitLab PR URL. The skill auto-triggers and runs the full pipeline.
 2. **In VS Code Copilot / Cursor:** Type `/pr-comment-fix` followed by the PR URL.
-3. **ECC-enhanced:** If ECC is installed, Stage 6 uses ECC's specialized agents (security-reviewer, performance-optimizer, code-reviewer, language-specific) instead of built-in generic reviewers.
-
 ### Environment Variables
 
 | Variable | Default | Purpose |
@@ -114,8 +110,6 @@ Requires: `gh` CLI (authenticated), `jq`, `bash 4+`.
 | `TEST_CMD` | auto-detect | Override test command |
 | `LINT_CMD` | auto-detect | Override lint command |
 | `DRY_RUN` | `false` | Simulation mode (no git/API write operations) |
-| `ECC_INSTALL_PATH` | `~/.claude` | Custom ECC install path |
-
 ---
 
 ## Changelog
@@ -191,5 +185,4 @@ Requires: `gh` CLI (authenticated), `jq`, `bash 4+`.
 | `gh` CLI (1.0+) | Fetching comments, posting replies | MCP tools |
 | `jq` | JSON processing in shell scripts | `grep`/`sed` fallback in some scripts |
 | `bash` 4+ | Script execution | — |
-| `tsx` or `ts-node` | Running `lib/ecc-detector.ts` | Manual install check |
-| ECC (optional) | Enhanced parallel review agents | Built-in agents in `agents/` |
+

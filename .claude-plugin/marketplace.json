@@ -2,7 +2,7 @@
   "name": "pr-comment-fix",
   "version": "2.3.0",
   "description": "Fetch, analyze, fix, verify, resolve, and re-request review for PR comments with script-backed multi-agent pipeline",
-  "help": "Provide a GitHub/GitLab PR URL. The skill runs a 13-stage pipeline (0-12) using gh CLI for API calls and parallel review agents.",
+  "help": "Provide a GitHub/GitLab PR URL. The skill runs a 14-stage pipeline (0-13) using gh CLI for API calls and parallel review agents.",
   "author": "Insight Agent",
   "license": "MIT",
   "homepage": "https://github.com/mtsocom2000/my-review-resolver",
@@ -42,7 +42,6 @@
     "rollback.sh — safe local revert of fix commits",
     "re-request-review.sh — re-request review after fixes",
     "CHANGES_REQUESTED tracking — blocking comment status through pipeline",
-    "Parallel multi-agent review with ECC integration",
     "User confirmation at critical decision points",
     "DRY_RUN mode for testing without side effects"
   ],

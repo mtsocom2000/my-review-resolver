@@ -3,11 +3,10 @@ name: pr-comment-fix
 description: >
   Use when given a GitHub/GitLab PR URL to check local branch sync status,
   fetch PR comments, analyze comment validity, apply fixes with multi-agent
-  parallel review (using ECC agents if available), verify build/tests pass,
+  parallel review, verify build/tests pass,
   and optionally push and mark comments resolved.
 origin: custom
 version: 2.3.0
-ecc-integration: true
 user-invocable: true
 no-emoji: true
 ---
@@ -87,16 +86,6 @@ When falling back to MCP tools, normalize the API responses to match the JSON fo
 | 11 (Reply) | `bash scripts/reply-to-comment.sh` echo pipe | Call `createPullRequestReviewComment` / `createIssueComment` MCP tool | Print reply text, ask user to post manually |
 | 11 (Resolve) | `bash scripts/reply-to-comment.sh action=resolve` | Call MCP tool to resolve the comment | Ask user to resolve manually
 | 12 (Re-request) | `bash scripts/re-request-review.sh` echo pipe | Call MCP tool `requestPullRequestReviewers` if available, or `addPullRequestReviewer` | Ask user to re-request review manually
-
-## Pre-flight: ECC Detection
-
-Before starting the pipeline, run:
-
-```
-tsx ./lib/ecc-detector.ts
-```
-
-If output shows `installed: true`, note the agent count and paths. Use ECC agents for Stage 6 parallel review (see ECC section below). If not installed, use the built-in subagents from `agents/`.
 
 ## Pipeline
 
@@ -364,25 +353,10 @@ Accept this resolution plan? (yes / view details / reorder / skip)
 
 Spawn review subagents in parallel. Each agent reads the full diff and affected files.
 
-**If ECC is available** (detected in pre-flight), use ECC agents in priority order:
-
-1. `security-reviewer` — always
-2. `performance-optimizer` — always
-3. `code-reviewer` — always
-4. Language-specific agents based on file extensions:
-   - `.ts`, `.tsx`, `.js`, `.jsx` → `typescript-reviewer`
-   - `.py` → `python-reviewer`
-   - `.java` → `java-reviewer`
-   - `.go` → `go-reviewer`
-   - `.kt` → `kotlin-reviewer`
-   - `.rs` → `rust-reviewer`
-   - `.cpp`, `.cc`, `.h` → `cpp-reviewer`
-   - `.sql` → `database-reviewer`
-
-**If ECC is not available**, use built-in agents from `agents/`:
-- `security` (agents/security.md)
-- `performance` (agents/performance.md)
-- `quality` (agents/quality.md)
+Use the built-in agents from `agents/`:
+- `security` (agents/security.md) — security vulnerability detection
+- `performance` (agents/performance.md) — performance issue detection
+- `quality` (agents/quality.md) — code quality, style, edge cases, documentation, language-specific patterns
 
 **Each subagent input spec:**
 
@@ -717,20 +691,6 @@ Do not auto-push the revert. Present the reverted state for user confirmation.
 - Content of the files referenced in PR comments
 - The filtered list of actionable comments from Stage 4
 
-## ECC Integration
-
-When ECC is detected (from pre-flight):
-
-1. Read `~/.claude/agents/` for ECC agent definitions
-2. Use ECC's security-reviewer, performance-optimizer, code-reviewer by default
-3. Select language-specific ECC reviewers based on file extensions (see Stage 6)
-4. Fall back to built-in agents for any category not covered by ECC
-
-When ECC is NOT detected:
-- Use built-in agents from `agents/`
-- Same workflow structure, fewer specialized capabilities
-- The pipeline functions identically, just with broader review agents
-
 ## Environment Variables
 
 | Variable | Default | Purpose |
@@ -741,8 +701,6 @@ When ECC is NOT detected:
 | GITHUB_TOKEN | from gh CLI | GitHub API auth fallback |
 | GITLAB_TOKEN | none | GitLab API auth |
 | DRY_RUN | false | Set to "true" for dryrun mode (no git changes, no API writes) |
-| ECC_DEBUG | false | Enable ECC debug logging |
-| ECC_INSTALL_PATH | ~/.claude | Custom ECC install path |
 
 ## File Reference
 

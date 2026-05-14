@@ -11,10 +11,7 @@
 | 6 (Parallel Review) | `agents/security.md`, `agents/performance.md`, `agents/quality.md` | Yes, for review insights | Skip review, proceed with Stage 4 analysis only |
 | 9 (Final Review) | `agents/validator.md` | Yes, for verification | Manual verification by user |
 
-If any subagent cannot be spawned (environment limitation), the model should:
-1. Try ECC agents as replacement (for Stage 6)
-2. Fall back to sequential execution (same logic, no parallelism)
-3. If agents are completely unavailable, proceed without that stage's output and flag the gap to the user
+If any subagent cannot be spawned (environment limitation), the model should fall back to sequential execution (same logic, no parallelism). If agents are completely unavailable, proceed without that stage's output and flag the gap to the user.
 
 ## Tool Dependencies
 
@@ -30,7 +27,7 @@ If any subagent cannot be spawned (environment limitation), the model should:
 |----------|--------------|-----------|--------------|-------|
 | Claude Code | ✅ SKILL.md | ✅ Full support | ✅ Via MCP tools | Primary target |
 | VS Code Copilot | ✅ AgentSkills | ⚠️ Limited (context fork) | ✅ Via Copilot MCP | Stage 5 may run sequentially |
-| Cursor | ✅ AgentSkills | ⚠️ Limited | ❌ Check docs | Tested with ECC integration |
+| Cursor | ✅ AgentSkills | ⚠️ Limited | ❌ Check docs | Requires manual subagent support |
 | OpenCode | ✅ AgentSkills | ⚠️ Custom plugin needed | ❌ | Requires manual config |
 
 ## Version Compatibility
@@ -38,5 +35,5 @@ If any subagent cannot be spawned (environment limitation), the model should:
 | Skill version | Min Claude Code | Min Copilot | Notes |
 |---------------|----------------|-------------|-------|
 | v2.2.0 | 1.0+ | 1.0+ (agent skills) | MCP fallback requires MCP server configured |
-| v2.1.0 | 1.0+ | N/A | ECC integration |
+| v2.1.0 | 1.0+ | N/A | Initial pipeline with built-in agents |
 | v2.0.0 | 1.0+ | N/A | Initial subagent-based pipeline |

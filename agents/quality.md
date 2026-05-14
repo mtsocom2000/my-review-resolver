@@ -287,6 +287,30 @@ Well-done aspects:
 
 ---
 
+## Language-Specific Review Guidance
+
+Adjust review focus based on file extension to compensate for the absence of dedicated language-specific reviewers:
+
+| Extension | Language | Additional Focus Areas |
+|-----------|----------|----------------------|
+| `.ts`, `.tsx` | TypeScript | Type safety, strict mode compliance, generics usage, `any` usage, interface design |
+| `.js`, `.jsx` | JavaScript | ES6+ features, async/await patterns, prototype vs class patterns |
+| `.py` | Python | Type hints, PEP 8 compliance, context managers, list comprehensions vs loops |
+| `.go` | Go | Error handling patterns, interface design, goroutine lifecycle, `defer` usage |
+| `.java` | Java | Null safety, exception hierarchy, generics, Optional usage |
+| `.kt` | Kotlin | Null safety, coroutine lifecycle, extension functions, sealed classes |
+| `.rs` | Rust | Ownership/borrowing patterns, unwrap usage, error handling with Result, unsafe blocks |
+| `.cpp`, `.cc`, `.h` | C++ | RAII patterns, pointer safety, const correctness, move semantics |
+| `.sql` | SQL | Injection vectors, parameterized queries, N+1 patterns, indexing considerations |
+| `.cs` | C# | LINQ usage, async/await patterns, null safety, IDisposable compliance |
+| `.rb` | Ruby | Block usage, method naming conventions, nil handling |
+| `.php` | PHP | Type hints, null coalescing, dependency injection patterns |
+| `.swift` | Swift | Optional chaining, protocol-oriented design, memory management |
+| `.dart` | Dart | Null safety, async patterns, Stream usage, Flutter widget structure |
+
+When reviewing files of a specific language, inspect these patterns first before general quality concerns.
+
 ## Version
 
+- v1.1.0 - Added language-specific review guidance
 - v1.0.0 - Initial release

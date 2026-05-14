@@ -26,10 +26,6 @@ cd my-review-resolver
 - MCP tools (GitHub MCP server) — used when `gh` CLI is not available
   - Configure your AI agent's MCP settings to include a GitHub MCP server
 
-### Optional enhancement
-- ECC (Everything Claude Code) — enables specialized parallel review agents
-  - Install: `git clone https://github.com/affaan-m/everything-claude-code.git && cd everything-claude-code && npm install && ./install.sh --profile minimal`
-
 ---
 
 ## Manual Install (per platform)
@@ -39,7 +35,7 @@ cd my-review-resolver
 ```bash
 # Project-level (recommended)
 mkdir -p .claude/skills/pr-comment-fix
-cp SKILL.md lib/ecc-detector.ts .claude/skills/pr-comment-fix/
+cp SKILL.md .claude/skills/pr-comment-fix/
 cp -r agents scripts references tests .claude/skills/pr-comment-fix/
 
 # Or user-level
@@ -85,8 +81,8 @@ ls -la scripts/*.sh
 DRY_RUN=true bash scripts/check-branch.sh https://github.com/example/repo/pull/1
 # Expected: JSON output, no actual git operations
 
-# Check ECC detector (optional)
-npx tsx lib/ecc-detector.ts
+# Verify with dryrun full pipeline
+DRY_RUN=true bash scripts/dryrun.sh
 ```
 
 ---
